@@ -3,10 +3,10 @@
 // Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
+//
 // Copyright (c) 2009-2019, NTESS
 // All rights reserved.
-// 
+//
 // Portions are copyright of other developers:
 // See the file CONTRIBUTORS.TXT in the top level directory
 // the distribution for more information.
@@ -15,195 +15,170 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef COMPONENTS_KINGSLEY_NOCEVENTS_H
 #define COMPONENTS_KINGSLEY_NOCEVENTS_H
 
 #include <sst/core/component.h>
 #include <sst/core/event.h>
+#include <sst/core/interfaces/simpleNetwork.h>
 #include <sst/core/link.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/timeConverter.h>
 #include <sst/core/unitAlgebra.h>
-#include <sst/core/interfaces/simpleNetwork.h>
 
 using namespace SST;
 
 namespace SST {
-    namespace Kingsley {
+namespace Kingsley {
 
-        class BaseNocEvent : public Event {
+class BaseNocEvent : public Event {
+   public:
+    enum NocEventType { CREDIT, PACKET, INTERNAL, INITIALIZATION };
 
-        public:
-            enum NocEventType {
-                CREDIT, PACKET, INTERNAL, INITIALIZATION
-            };
+    inline auto getType() const -> NocEventType { return type; }
 
-            inline NocEventType getType() const { return type; }
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+        Event::serialize_order(ser);
+        ser &type;
+    }
 
-            void serialize_order(SST::Core::Serialization::serializer &ser) override {
-                Event::serialize_order(ser);
-                ser & type;
-            }
+   protected:
+    explicit BaseNocEvent(NocEventType type) : type(type) {}
 
-        protected:
-            BaseNocEvent(NocEventType type) :
-                Event(),
-                type(type) {}
+   private:
+    BaseNocEvent() = default;  // For Serialization only
+    NocEventType type;
 
-        private:
-            BaseNocEvent() {} // For Serialization only
-            NocEventType type;
+    ImplementSerializable(SST::Kingsley::BaseNocEvent);
+};
 
-            ImplementSerializable(SST::Kingsley::BaseNocEvent);
-        };
+class NocPacket : public BaseNocEvent {
+   public:
+    SST::Interfaces::SimpleNetwork::Request *request{};
+    int vn{};
 
+    NocPacket() : BaseNocEvent(BaseNocEvent::PACKET) {}
 
-        class NocPacket : public BaseNocEvent {
+    explicit NocPacket(SST::Interfaces::SimpleNetwork::Request *req)
+        : BaseNocEvent(BaseNocEvent::PACKET), request(req), injectionTime(0) {}
 
-        public:
-            SST::Interfaces::SimpleNetwork::Request *request;
-            int vn;
+    ~NocPacket() override { delete request; }
 
-            NocPacket() :
-                BaseNocEvent(BaseNocEvent::PACKET),
-                injectionTime(0) {}
+    inline void setInjectionTime(SimTime_t time) { injectionTime = time; }
 
-            NocPacket(SST::Interfaces::SimpleNetwork::Request *req) :
-                BaseNocEvent(BaseNocEvent::PACKET),
-                request(req),
-                injectionTime(0) {}
+    auto clone() -> NocPacket * override {
+        auto *ret = new NocPacket(*this);
+        ret->request = this->request->clone();
+        return ret;
+    }
 
-            ~NocPacket() {
-                delete request;
-            }
+    inline auto getInjectionTime() const -> SimTime_t { return injectionTime; }
 
-            inline void setInjectionTime(SimTime_t time) { injectionTime = time; }
+    inline auto getTraceType() const -> SST::Interfaces::SimpleNetwork::Request::TraceType {
+        return request->getTraceType();
+    }
 
-            virtual NocPacket *clone(void) override {
-                NocPacket *ret = new NocPacket(*this);
-                ret->request = this->request->clone();
-                return ret;
-            }
+    inline auto getTraceID() const -> int { return request->getTraceID(); }
 
-            inline SimTime_t getInjectionTime(void) const { return injectionTime; }
+    inline void setSizeInFlits(int size) { size_in_flits = size; }
 
-            inline SST::Interfaces::SimpleNetwork::Request::TraceType getTraceType() const { return request->getTraceType(); }
+    inline auto getSizeInFlits() -> int { return size_in_flits; }
 
-            inline int getTraceID() const { return request->getTraceID(); }
+    void print(const std::string &header, Output &out) const override {
+        out.output("%s RtrEvent to be delivered at %" PRIu64
+                   " with priority %d. src = %lld, dest = %lld\n",
+                   header.c_str(), getDeliveryTime(), getPriority(), request->src, request->dest);
+        if (request->inspectPayload() != nullptr) {
+            request->inspectPayload()->print("  -> ", out);
+        }
+    }
 
-            inline void setSizeInFlits(int size) { size_in_flits = size; }
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+        BaseNocEvent::serialize_order(ser);
+        ser &request;
+        ser &vn;
+        ser &size_in_flits;
+        ser &injectionTime;
+    }
 
-            inline int getSizeInFlits() { return size_in_flits; }
+   private:
+    SimTime_t injectionTime{0};
+    int size_in_flits{};
 
-            virtual void print(const std::string &header, Output &out) const override {
-                out.output("%s RtrEvent to be delivered at %"
-                PRIu64
-                " with priority %d. src = %lld, dest = %lld\n",
-                    header.c_str(), getDeliveryTime(), getPriority(), request->src, request->dest);
-                if (request->inspectPayload() != NULL)
-                    request->inspectPayload()->print("  -> ", out);
-            }
+    ImplementSerializable(SST::Kingsley::NocPacket)
+};
 
-            void serialize_order(SST::Core::Serialization::serializer &ser) override {
-                BaseNocEvent::serialize_order(ser);
-                ser & request;
-                ser & vn;
-                ser & size_in_flits;
-                ser & injectionTime;
-            }
+class credit_event : public BaseNocEvent {
+   public:
+    int vn{};
+    int credits{};
 
-        private:
-            SimTime_t injectionTime;
-            int size_in_flits;
+    credit_event() : BaseNocEvent(BaseNocEvent::CREDIT) {}
 
-            ImplementSerializable(SST::Kingsley::NocPacket)
+    credit_event(int vn, int credits)
+        : BaseNocEvent(BaseNocEvent::CREDIT), vn(vn), credits(credits) {}
 
-        };
+    void print(const std::string &header, Output &out) const override {
+        out.output("%s credit_event to be delivered at %" PRIu64 " with priority %d\n",
+                   header.c_str(), getDeliveryTime(), getPriority());
+    }
 
-        class credit_event : public BaseNocEvent {
-        public:
-            int vn;
-            int credits;
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+        BaseNocEvent::serialize_order(ser);
+        ser &vn;
+        ser &credits;
+    }
 
-            credit_event() :
-                BaseNocEvent(BaseNocEvent::CREDIT) {}
+   private:
+    ImplementSerializable(SST::Kingsley::credit_event)
+};
 
-            credit_event(int vn, int credits) :
-                BaseNocEvent(BaseNocEvent::CREDIT),
-                vn(vn),
-                credits(credits) {}
+class NocInitEvent : public BaseNocEvent {
+   public:
+    enum Commands {
+        REPORT_ENDPOINT,
+        SUM_ENDPOINTS,
+        COMPUTE_X_SIZE,
+        COMPUTE_Y_SIZE,
+        COMPUTE_ENDPOINT_START,
+        BROADCAST_TOTAL_ENDPOINTS,
+        BROADCAST_X_SIZE,
+        BROADCAST_Y_SIZE,
+        COMPUTE_X_POS,
+        COMPUTE_Y_POS,
+        REPORT_ENDPOINT_ID,
+        REPORT_FLIT_SIZE,
+        REPORT_REQUESTED_VNS
+    };
 
-            virtual void print(const std::string &header, Output &out) const override {
-                out.output("%s credit_event to be delivered at %"
-                PRIu64
-                " with priority %d\n",
-                    header.c_str(), getDeliveryTime(), getPriority());
-            }
+    Commands command;
+    int int_value{};
+    UnitAlgebra ua_value;
 
-            void serialize_order(SST::Core::Serialization::serializer &ser) override {
-                BaseNocEvent::serialize_order(ser);
-                ser & vn;
-                ser & credits;
-            }
+    NocInitEvent() : BaseNocEvent(BaseNocEvent::INITIALIZATION) {}
 
-        private:
+    auto clone() -> NocInitEvent * override {
+        auto *ret = new NocInitEvent(*this);
+        return ret;
+    }
 
-            ImplementSerializable(SST::Kingsley::credit_event)
+    void print(const std::string &header, Output &out) const override {
+        out.output("%s NocInitEvent to be delivered at %" PRIu64 " with priority %d\n",
+                   header.c_str(), getDeliveryTime(), getPriority());
+        out.output("%s     command: %d, int_value = %d, ua_value = %s\n", header.c_str(), command,
+                   int_value, ua_value.toStringBestSI().c_str());
+    }
 
-        };
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+        BaseNocEvent::serialize_order(ser);
+        ser &command;
+        ser &int_value;
+        ser &ua_value;
+    }
 
-        class NocInitEvent : public BaseNocEvent {
-        public:
-
-            enum Commands {
-                REPORT_ENDPOINT,
-                SUM_ENDPOINTS,
-                COMPUTE_X_SIZE,
-                COMPUTE_Y_SIZE,
-                COMPUTE_ENDPOINT_START,
-                BROADCAST_TOTAL_ENDPOINTS,
-                BROADCAST_X_SIZE,
-                BROADCAST_Y_SIZE,
-                COMPUTE_X_POS,
-                COMPUTE_Y_POS,
-                REPORT_ENDPOINT_ID,
-                REPORT_FLIT_SIZE,
-                REPORT_REQUESTED_VNS
-            };
-
-            Commands command;
-            int int_value;
-            UnitAlgebra ua_value;
-
-            NocInitEvent() :
-                BaseNocEvent(BaseNocEvent::INITIALIZATION) {}
-
-            virtual NocInitEvent *clone(void) override {
-                NocInitEvent *ret = new NocInitEvent(*this);
-                return ret;
-            }
-
-            virtual void print(const std::string &header, Output &out) const override {
-                out.output("%s NocInitEvent to be delivered at %"
-                PRIu64
-                " with priority %d\n",
-                    header.c_str(), getDeliveryTime(), getPriority());
-                out.output("%s     command: %d, int_value = %d, ua_value = %s\n",
-                           header.c_str(), command, int_value, ua_value.toStringBestSI().c_str());
-            }
-
-            void serialize_order(SST::Core::Serialization::serializer &ser) override {
-                BaseNocEvent::serialize_order(ser);
-                ser & command;
-                ser & int_value;
-                ser & ua_value;
-            }
-
-
-        private:
-            ImplementSerializable(SST::Kingsley::NocInitEvent)
-        };
+   private:
+    ImplementSerializable(SST::Kingsley::NocInitEvent)
+};
 
 // class internal_router_event : public BaseNocEvent {
 //     int next_port;
@@ -254,11 +229,12 @@ namespace SST {
 //     inline int getDest() const {return encap_ev->request->dest;}
 //     inline int getSrc() const {return encap_ev->request->src;}
 
-//     inline SST::Interfaces::SimpleNetwork::Request::TraceType getTraceType() {return encap_ev->getTraceType();}
-//     inline int getTraceID() {return encap_ev->getTraceID();}
+//     inline SST::Interfaces::SimpleNetwork::Request::TraceType getTraceType() {return
+//     encap_ev->getTraceType();} inline int getTraceID() {return encap_ev->getTraceID();}
 
 //     virtual void print(const std::string& header, Output &out) const  override {
-//         out.output("%s internal_router_event to be delivered at %" PRIu64 " with priority %d.  src = %d, dest = %d\n",
+//         out.output("%s internal_router_event to be delivered at %" PRIu64 " with priority %d. src
+//         = %d, dest = %d\n",
 //                    header.c_str(), getDeliveryTime(), getPriority(), getSrc(), getDest());
 //         if ( encap_ev != NULL ) encap_ev->print(header + std::string("-> "),out);
 //     }
@@ -276,7 +252,7 @@ namespace SST {
 //     ImplementSerializable(SST::Kingsley::internal_router_event)
 // };
 
-    }
-}
+}  // namespace Kingsley
+}  // namespace SST
 
-#endif // COMPONENTS_KINGSLEY_NOCEVENTS_H
+#endif  // COMPONENTS_KINGSLEY_NOCEVENTS_H

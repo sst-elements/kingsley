@@ -1,10 +1,10 @@
 // Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
+//
 // Copyright (c) 2009-2019, NTESS
 // All rights reserved.
-// 
+//
 // Portions are copyright of other developers:
 // See the file CONTRIBUTORS.TXT in the top level directory
 // the distribution for more information.
@@ -12,7 +12,6 @@
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
-
 
 #ifndef COMPONENTS_KINGSLEY_NOC_MESH_H
 #define COMPONENTS_KINGSLEY_NOC_MESH_H
@@ -22,207 +21,189 @@
 #include <sst/core/event.h>
 #include <sst/core/link.h>
 #include <sst/core/output.h>
-#include <sst/core/timeConverter.h>
-
 #include <sst/core/statapi/stataccumulator.h>
+#include <sst/core/timeConverter.h>
 
 #include <queue>
 
-#include "nocEvents.h"
 #include "lru_unit.h"
+#include "nocEvents.h"
 
 using namespace SST;
 
 namespace SST {
-    namespace Kingsley {
+namespace Kingsley {
 
-        class noc_mesh_event;
+class noc_mesh_event;
 
-        class noc_mesh : public Component {
+class noc_mesh : public Component {
+   public:
+    SST_ELI_REGISTER_COMPONENT(noc_mesh, "kingsley", "noc_mesh", SST_ELI_ELEMENT_VERSION(0, 1, 0),
+                               "2-D mesh NOC router", COMPONENT_CATEGORY_NETWORK)
 
-        public:
+    SST_ELI_DOCUMENT_PARAMS(
+        {"local_ports", "Number of ports that are dedicated to endpoints.", "1"},
+        // {"frequency",          "Frequency of the router in Hz (can include SI prefix."},
+        {"link_bw",
+         "Bandwidth of the links specified in either b/s or B/s (can include SI prefix)."},
+        {"flit_size", "Flit size specified in either b or B (can include SI prefix)."},
+        {"input_buf_size",
+         "Size of input buffers in either b or B (can use SI prefix).  Default is 2*flit_size."},
+        {"port_priority_equal",
+         "Set to true to have all port have equal priority (usually endpoint ports have higher "
+         "priority).",
+         "false"},
+        {"route_y_first", "Set to true to rout Y-dimension first.", "false"},
+        {"use_dense_map",
+         "Set to true to have a dense network id map instead of the sparse map normally used.",
+         "false"},
+        // {"network_inspectors", "Comma separated list of network inspectors to put on output
+        // ports.", ""},
+    )
 
-            SST_ELI_REGISTER_COMPONENT(
-                noc_mesh,
-            "kingsley",
-            "noc_mesh",
-            SST_ELI_ELEMENT_VERSION(0,1,0),
-            "2-D mesh NOC router",
-            COMPONENT_CATEGORY_NETWORK)
+    SST_ELI_DOCUMENT_PORTS({"north", "North port", {}}, {"south", "South port", {}},
+                           {"east", "East port", {}}, {"west", "West port", {}},
+                           {"local%(local_ports)d", "Ports which connect to endpoints.", {}})
 
-            SST_ELI_DOCUMENT_PARAMS(
-            { "local_ports", "Number of ports that are dedicated to endpoints.", "1" },
-            // {"frequency",          "Frequency of the router in Hz (can include SI prefix."},
-            { "link_bw", "Bandwidth of the links specified in either b/s or B/s (can include SI prefix)." },
-            { "flit_size", "Flit size specified in either b or B (can include SI prefix)." },
-            { "input_buf_size", "Size of input buffers in either b or B (can use SI prefix).  Default is 2*flit_size." },
-            { "port_priority_equal", "Set to true to have all port have equal priority (usually endpoint ports have higher priority).", "false" },
-            { "route_y_first", "Set to true to rout Y-dimension first.", "false" },
-            { "use_dense_map", "Set to true to have a dense network id map instead of the sparse map normally used.", "false" },
-            // {"network_inspectors", "Comma separated list of network inspectors to put on output ports.", ""},
-            )
+    SST_ELI_DOCUMENT_STATISTICS(
+        {"send_bit_count", "Count number of bits sent on link", "bits", 1},
+        // { "send_packet_count",  "Count number of packets sent on link", "packets", 1},
+        {"output_port_stalls", "Time output port is stalled (in units of core timebase)",
+         "time in stalls", 1},
+        {"xbar_stalls", "Count number of cycles the xbar is stalled", "cycles", 1},
+        // { "idle_time",          "Amount of time spent idle for a given port", "units of core
+        // timebase", 1},
+    )
 
-            SST_ELI_DOCUMENT_PORTS(
-            { "north", "North port", {}},
-            { "south", "South port", {}},
-            { "east", "East port", {}},
-            { "west", "West port", {}},
-            { "local%(local_ports)d", "Ports which connect to endpoints.", {}}
-            )
+    static const int north_port = 0;
+    static const int south_port = 1;
+    static const int east_port = 2;
+    static const int west_port = 3;
+    static const int local_port_start = 4;
 
-            SST_ELI_DOCUMENT_STATISTICS(
-            { "send_bit_count", "Count number of bits sent on link", "bits", 1 },
-            // { "send_packet_count",  "Count number of packets sent on link", "packets", 1},
-            { "output_port_stalls", "Time output port is stalled (in units of core timebase)", "time in stalls", 1 },
-            { "xbar_stalls", "Count number of cycles the xbar is stalled", "cycles", 1 },
-            // { "idle_time",          "Amount of time spent idle for a given port", "units of core timebase", 1},
-            )
+    static const int north_mask = 1 << north_port;
+    static const int south_mask = 1 << south_port;
+    static const int east_mask = 1 << east_port;
+    static const int west_mask = 1 << west_port;
 
-            static const int north_port = 0;
-            static const int south_port = 1;
-            static const int east_port = 2;
-            static const int west_port = 3;
-            static const int local_port_start = 4;
+   private:
+    int init_state;
+    int init_count;
+    int endpoint_start;
+    int total_endpoints;
+    unsigned int edge_status;
+    unsigned int endpoint_locations;
 
-            static const int north_mask = 1 << north_port;
-            static const int south_mask = 1 << south_port;
-            static const int east_mask = 1 << east_port;
-            static const int west_mask = 1 << west_port;
+    int flit_size;
+    int input_buf_size;
 
-        private:
+    int x_size{};
+    int y_size{};
 
-            int init_state;
-            int init_count;
-            int endpoint_start;
-            int total_endpoints;
-            unsigned int edge_status;
-            unsigned int endpoint_locations;
+    int my_x{};
+    int my_y{};
 
-            int flit_size;
-            int input_buf_size;
+    bool route_y_first;
 
-            int x_size;
-            int y_size;
+    using port_queue_t = std::queue<noc_mesh_event *>;
 
-            int my_x;
-            int my_y;
+    Clock::Handler<noc_mesh> *my_clock_handler;
+    TimeConverter *clock_tc;
 
-            bool route_y_first;
+    void clock_wakeup();
 
+    bool clock_is_off;
+    Cycle_t last_time = 0;
 
-            typedef std::queue<noc_mesh_event *> port_queue_t;
+    Link **ports;
+    port_queue_t *port_queues;
+    int *port_busy;
+    int *port_credits;
+    int local_ports;
+    bool use_dense_map;
+    bool port_priority_equal;
+    const int *dense_map;
 
-            Clock::Handler <noc_mesh> *my_clock_handler;
-            TimeConverter *clock_tc;
+    std::vector<lru_unit<int>> lru_units;
+    // lru_unit<int> local_lru;
+    // lru_unit<int> mesh_lru;
 
-            void clock_wakeup();
+    auto clock_handler(Cycle_t cycle) -> bool;
+    // Statistic<uint64_t>** xbar_stalls;
 
-            bool clock_is_off;
-            Cycle_t last_time = 0;
+    Output &output;
 
-            Link **ports;
-            port_queue_t *port_queues;
-            int *port_busy;
-            int *port_credits;
-            int local_ports;
-            bool use_dense_map;
-            bool port_priority_equal;
-            const int *dense_map;
+    auto wrap_incoming_packet(NocPacket *packet) -> noc_mesh_event *;
 
-            std::vector <lru_unit<int>> lru_units;
-            // lru_unit<int> local_lru;
-            // lru_unit<int> mesh_lru;
+    void handle_input_r2r(Event *ev, int port);
 
-            bool clock_handler(Cycle_t cycle);
-            // Statistic<uint64_t>** xbar_stalls;
+    void handle_input_ep2r(Event *ev, int port);
 
-            Output &output;
+    void route(noc_mesh_event *event);
 
-            noc_mesh_event *wrap_incoming_packet(NocPacket *packet);
+    Statistic<uint64_t> **send_bit_count;
+    Statistic<uint64_t> **output_port_stalls;
+    Statistic<uint64_t> **xbar_stalls;
+    // Statistic<uint64_t>** xbar_stalls_prioirty;
+    // Statistic<uint64_t>** xbar_stalls_normal;
+    // Statistic<uint64_t>** output_idle;
 
-            void handle_input_r2r(Event *ev, int port);
+   public:
+    noc_mesh(ComponentId_t cid, Params &params);
 
-            void handle_input_ep2r(Event *ev, int port);
+    ~noc_mesh() override;
 
-            void route(noc_mesh_event *event);
+    void init(unsigned int phase) override;
 
+    void complete(unsigned int phase) override;
 
-            Statistic <uint64_t> **send_bit_count;
-            Statistic <uint64_t> **output_port_stalls;
-            Statistic <uint64_t> **xbar_stalls;
-            // Statistic<uint64_t>** xbar_stalls_prioirty;
-            // Statistic<uint64_t>** xbar_stalls_normal;
-            // Statistic<uint64_t>** output_idle;
+    void setup() override;
 
+    void finish() override;
 
-        public:
-            noc_mesh(ComponentId_t cid, Params &params);
+    // void sendTopologyEvent(int port, TopologyEvent* ev);
+    // void recvTopologyEvent(int port, TopologyEvent* ev);
 
-            ~noc_mesh();
+    // void dumpState(std::ostream& stream);
+    void printStatus(Output &out) override;
+};
 
-            void init(unsigned int phase);
+class noc_mesh_event : public BaseNocEvent {
+   public:
+    std::pair<int, int> dest_mesh_loc;
+    int egress_port{};
 
-            void complete(unsigned int phase);
+    int next_port{};
+    NocPacket *encap_ev;
 
-            void setup();
+    noc_mesh_event() : BaseNocEvent(BaseNocEvent::INTERNAL) { encap_ev = nullptr; }
 
-            void finish();
+    explicit noc_mesh_event(NocPacket *ev) : BaseNocEvent(BaseNocEvent::INTERNAL) { encap_ev = ev; }
 
-            // void sendTopologyEvent(int port, TopologyEvent* ev);
-            // void recvTopologyEvent(int port, TopologyEvent* ev);
+    ~noc_mesh_event() override { delete encap_ev; }
 
-            // void dumpState(std::ostream& stream);
-            void printStatus(Output &out);
-
-
-        };
-
-        class noc_mesh_event : public BaseNocEvent {
-
-        public:
-
-            std::pair<int, int> dest_mesh_loc;
-            int egress_port;
-
-            int next_port;
-            NocPacket *encap_ev;
-
-            noc_mesh_event() :
-                BaseNocEvent(BaseNocEvent::INTERNAL) {
-                encap_ev = NULL;
-            }
-
-            noc_mesh_event(NocPacket *ev) :
-                BaseNocEvent(BaseNocEvent::INTERNAL) { encap_ev = ev; }
-
-            virtual ~noc_mesh_event() {
-                if (encap_ev != NULL) delete encap_ev;
-            }
-
-            virtual noc_mesh_event *clone(void) override {
-                noc_mesh_event *ret = new noc_mesh_event(*this);
-                ret->dest_mesh_loc = dest_mesh_loc;
-                ret->egress_port = egress_port;
-                ret->next_port = next_port;
-                ret->encap_ev = encap_ev->clone();
-                return ret;
-            }
-
-            void serialize_order(SST::Core::Serialization::serializer &ser) override {
-                BaseNocEvent::serialize_order(ser);
-                ser & dest_mesh_loc;
-                ser & egress_port;
-                ser & next_port;
-                ser & encap_ev;
-            }
-
-        private:
-            ImplementSerializable(SST::Kingsley::noc_mesh_event)
-
-        };
-
-
+    auto clone() -> noc_mesh_event * override {
+        auto *ret = new noc_mesh_event(*this);
+        ret->dest_mesh_loc = dest_mesh_loc;
+        ret->egress_port = egress_port;
+        ret->next_port = next_port;
+        ret->encap_ev = encap_ev->clone();
+        return ret;
     }
-}
 
-#endif // COMPONENTS_KINGSLEY_NOC_MESH_H
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+        BaseNocEvent::serialize_order(ser);
+        ser &dest_mesh_loc;
+        ser &egress_port;
+        ser &next_port;
+        ser &encap_ev;
+    }
+
+   private:
+    ImplementSerializable(SST::Kingsley::noc_mesh_event)
+};
+
+}  // namespace Kingsley
+}  // namespace SST
+
+#endif  // COMPONENTS_KINGSLEY_NOC_MESH_H

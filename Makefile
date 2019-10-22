@@ -1,5 +1,6 @@
 CXX = $(shell sst-config --CXX)
 CXXFLAGS = $(shell sst-config --ELEMENT_CXXFLAGS)
+CXXFLAGS += -Wall -Wextra -Wpedantic
 LDFLAGS  = $(shell sst-config --ELEMENT_LDFLAGS)
 
 SRC = $(wildcard *.cc)
