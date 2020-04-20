@@ -1,10 +1,10 @@
 // -*- mode: c++ -*-
 
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // Portions are copyright of other developers:
@@ -18,15 +18,16 @@
 #ifndef COMPONENTS_KINGSLEY_LINKCONTROL_H
 #define COMPONENTS_KINGSLEY_LINKCONTROL_H
 
-#include <sst/core/interfaces/simpleNetwork.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/unitAlgebra.h>
 
+#include <sst/core/interfaces/simpleNetwork.h>
+
 // #include <sst/core/statapi/statbase.h>
 
-#include <queue>
-
 #include "nocEvents.h"
+
+#include <queue>
 
 namespace SST {
 
@@ -37,28 +38,37 @@ namespace Kingsley {
 // Whole class definition needs to be in the header file so that other
 // libraries can use the class to talk with the kingsley routers.
 
-using network_queue_t = std::queue<NocPacket *>;
+typedef std::queue<NocPacket *> network_queue_t;
 
 // Class to manage link between NIC and router.  A single NIC can have
 // more than one link_control (and thus link to router).
 class LinkControl : public SST::Interfaces::SimpleNetwork {
-   public:
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(LinkControl, "kingsley", "linkcontrol",
-                                          SST_ELI_ELEMENT_VERSION(0, 1, 0),
+
+  public:
+    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(LinkControl, "kingsley", "linkcontrol", SST_ELI_ELEMENT_VERSION(0, 1, 0),
                                           "Link Control module for building Kingsley-enabled NICs",
                                           SST::Interfaces::SimpleNetwork)
 
-    SST_ELI_DOCUMENT_PARAMS()
+    SST_ELI_DOCUMENT_PARAMS({"port_name", "Port name to connect to. Only used when loaded anonymously", ""},
+                            {"link_bw",
+                             "Bandwidth of the links specified in either b/s or B/s (can include SI prefix)."},
+                            {"in_buf_size"
+                             "Size of input buffers specified in b or B (can include SI prefix).",
+                             "1kB"},
+                            {"out_buf_size"
+                             "Size of output buffers specified in b or B (can include SI prefix).",
+                             "1kB"})
+
+    SST_ELI_DOCUMENT_PORTS({"rtr_port", "Port that connects to router", {"kinglsey.BaseNocEvent"}})
 
     SST_ELI_DOCUMENT_STATISTICS(
         {"packet_latency", "Histogram of latencies for received packets", "latency", 1},
         // { "send_bit_count",     "Count number of bits sent on link", "bits", 1},
-        // { "output_port_stalls", "Time output port is stalled (in units of core timebase)", "time
-        // in stalls", 1}, { "idle_time",          "Number of (in unites of core timebas) that port
-        // was idle", "time spent idle", 1},
+        // { "output_port_stalls", "Time output port is stalled (in units of core timebase)", "time in stalls", 1},
+        // { "idle_time",          "Number of (in unites of core timebas) that port was idle", "time spent idle", 1},
     )
 
-   private:
+  private:
     int init_state;
 
     // Link to router
@@ -70,7 +80,7 @@ class LinkControl : public SST::Interfaces::SimpleNetwork {
     UnitAlgebra link_bw;
     UnitAlgebra inbuf_size;
     UnitAlgebra outbuf_size;
-    int flit_size{};  // in bits
+    int flit_size; // in bits
 
     std::deque<NocPacket *> init_events;
 
@@ -88,7 +98,7 @@ class LinkControl : public SST::Interfaces::SimpleNetwork {
     // the credits available for your next buffer, as well as track
     // the credits you need to return to the buffer sending data to
     // you,
-    int *outbuf_credits{};
+    int *outbuf_credits;
 
     int *rtr_credits;
     int *in_ret_credits;
@@ -105,78 +115,66 @@ class LinkControl : public SST::Interfaces::SimpleNetwork {
 
     // PacketStats stats;
     // Statistics
-    Statistic<uint64_t> *packet_latency{};
+    Statistic<uint64_t> *packet_latency;
     // Statistic<uint64_t>* send_bit_count;
     // Statistic<uint64_t>* output_port_stalls;
     // Statistic<uint64_t>* idle_time;
 
     Output &output;
 
-   public:
-    LinkControl(Component *parent, Params &params);
+  public:
+    LinkControl(ComponentId_t id, Params &params, int);
 
-    LinkControl(ComponentId_t id, Params &params, int /*unused*/);
-
-    ~LinkControl() override;
+    ~LinkControl();
 
     // Must be called before any other functions to configure the link.
     // Preferably during the owning component's constructor
     // time_base is a frequency which represents the bandwidth of the link in flits/second.
-    auto initialize(const std::string &port_name, const UnitAlgebra &link_bw_in, int vns,
-                    const UnitAlgebra &in_buf_size, const UnitAlgebra &out_buf_size)
-        -> bool override;
-
-    void setup() override;
-
-    void init(unsigned int phase) override;
-
-    void complete(unsigned int phase) override;
-
-    void finish() override;
+    bool initialize(const std::string &port_name, const UnitAlgebra &link_bw_in, int vns,
+                    const UnitAlgebra &in_buf_size, const UnitAlgebra &out_buf_size);
+    void setup();
+    void init(unsigned int phase);
+    void complete(unsigned int phase);
+    void finish();
 
     // Returns true if there is space in the output buffer and false
     // otherwise.
-    auto send(SST::Interfaces::SimpleNetwork::Request *req, int vn) -> bool override;
+    bool send(SST::Interfaces::SimpleNetwork::Request *req, int vn);
 
     // Returns true if there is space in the output buffer and false
     // otherwise.
-    auto spaceToSend(int vn, int bits) -> bool override;
+    bool spaceToSend(int vn, int flits);
 
     // Returns NULL if no event in input_buf[vn]. Otherwise, returns
     // the next event.
-    auto recv(int vn) -> SST::Interfaces::SimpleNetwork::Request * override;
+    SST::Interfaces::SimpleNetwork::Request *recv(int vn);
 
     // Returns true if there is an event in the input buffer and false
     // otherwise.
-    auto requestToReceive(int vn) -> bool override { return !input_buf[vn].empty(); }
+    bool requestToReceive(int vn) { return !input_buf[vn].empty(); }
 
-    void sendInitData(SST::Interfaces::SimpleNetwork::Request *req) override;
-
-    auto recvInitData() -> SST::Interfaces::SimpleNetwork::Request * override;
+    void sendInitData(SST::Interfaces::SimpleNetwork::Request *ev);
+    SST::Interfaces::SimpleNetwork::Request *recvInitData();
 
     // const PacketStats& getPacketStats(void) const { return stats; }
 
-    inline void setNotifyOnReceive(HandlerBase *functor) override { receiveFunctor = functor; }
+    inline void setNotifyOnReceive(HandlerBase *functor) { receiveFunctor = functor; }
+    inline void setNotifyOnSend(HandlerBase *functor) { sendFunctor = functor; }
 
-    inline void setNotifyOnSend(HandlerBase *functor) override { sendFunctor = functor; }
+    inline bool isNetworkInitialized() const { return network_initialized; }
+    inline nid_t getEndpointID() const { return id; }
+    inline const UnitAlgebra &getLinkBW() const { return link_bw; }
 
-    inline auto isNetworkInitialized() const -> bool override { return network_initialized; }
+    void printStatus(Output &out);
 
-    inline auto getEndpointID() const -> nid_t override { return id; }
-
-    inline auto getLinkBW() const -> const UnitAlgebra & override { return link_bw; }
-
-    void printStatus(Output &out) override;
-
-   private:
+  private:
     bool network_initialized;
 
     void handle_input(Event *ev);
-
     void handle_output(Event *ev);
 };
 
-}  // namespace Kingsley
-}  // namespace SST
+} // namespace Kingsley
+} // namespace SST
 
-#endif  // COMPONENTS_KINGSLEY_LINKCONTROL_H
+#endif // COMPONENTS_KINGSLEY_LINKCONTROL_H

@@ -1,8 +1,8 @@
-// Copyright 2013-2018 NTESS. Under the terms
+// Copyright 2013-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2013-2018, NTESS
+// Copyright (c) 2013-2020, NTESS
 // All rights reserved.
 //
 // Portions are copyright of other developers:
@@ -13,55 +13,90 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#include <sst/core/sst_config.h>
+
 #include "linkControl.h"
 
 #include <sst/core/simulation.h>
-#include <sst/core/sst_config.h>
 
 namespace SST {
 using namespace Interfaces;
 
 namespace Kingsley {
 
-LinkControl::LinkControl(Component *parent, Params & /*params*/)
-    : SST::Interfaces::SimpleNetwork(parent),
-      init_state(0),
-      rtr_link(nullptr),
-      output_timing(nullptr),
-      req_vns(0),
-      id(-1),
-      input_buf(nullptr),
-      output_buf(nullptr),
-      rtr_credits(nullptr),
-      in_ret_credits(nullptr),
-      waiting(true),
-      have_packets(false),
-      receiveFunctor(nullptr),
-      sendFunctor(nullptr),
-      network_initialized(false),
-      output(Simulation::getSimulation()->getSimulationOutput()) {}
+LinkControl::LinkControl(ComponentId_t id, Params &params, int vns)
+    : SST::Interfaces::SimpleNetwork(id), init_state(0), rtr_link(nullptr), output_timing(nullptr), req_vns(vns),
+      id(-1), input_buf(nullptr), output_buf(nullptr), rtr_credits(nullptr), in_ret_credits(nullptr), waiting(true),
+      have_packets(false), receiveFunctor(nullptr), sendFunctor(nullptr),
+      output(Simulation::getSimulation()->getSimulationOutput()), network_initialized(false) {
+    link_bw = params.find<UnitAlgebra>("link_bw");
+    if (link_bw.hasUnits("B/s")) {
+        link_bw *= UnitAlgebra("8b/B");
+    }
 
-LinkControl::LinkControl(ComponentId_t id, Params & /*params*/, int /*unused*/)
-    : SST::Interfaces::SimpleNetwork(id),
-      init_state(0),
-      rtr_link(nullptr),
-      output_timing(nullptr),
-      req_vns(0),
-      id(-1),
-      input_buf(nullptr),
-      output_buf(nullptr),
-      rtr_credits(nullptr),
-      in_ret_credits(nullptr),
-      waiting(true),
-      have_packets(false),
-      receiveFunctor(nullptr),
-      sendFunctor(nullptr),
-      network_initialized(false),
-      output(Simulation::getSimulation()->getSimulationOutput()) {}
+    // Input and output buffers
+    input_buf = new network_queue_t[req_vns];
+    output_buf = new network_queue_t[req_vns];
 
-auto LinkControl::initialize(const std::string &port_name, const UnitAlgebra &link_bw_in, int vns,
-                             const UnitAlgebra &in_buf_size, const UnitAlgebra &out_buf_size)
-    -> bool {
+    // Initialize credit arrays.  Credits are in flits, and we don't
+    // yet know the flit size, so can't initialize in_ret_credits and
+    // outbuf_credits yet.  Will initialize them after we get the
+    // flit_size
+    rtr_credits = new int[req_vns];
+    in_ret_credits = new int[req_vns];
+    outbuf_credits = new int[req_vns];
+
+    inbuf_size = params.find<UnitAlgebra>("in_buf_size", "1kB");
+    if (!inbuf_size.hasUnits("b") && !inbuf_size.hasUnits("B")) {
+        output.fatal(CALL_INFO, -1,
+                     "in_buf_size must be specified in either "
+                     "bits or bytes: %s\n",
+                     inbuf_size.toStringBestSI().c_str());
+    }
+    if (inbuf_size.hasUnits("B"))
+        inbuf_size *= UnitAlgebra("8b/B");
+
+    outbuf_size = params.find<UnitAlgebra>("out_buf_size", "1kB");
+    if (!outbuf_size.hasUnits("b") && !outbuf_size.hasUnits("B")) {
+        output.fatal(CALL_INFO, -1,
+                     "out_buf_size must be specified in either "
+                     "bits or bytes: %s\n",
+                     outbuf_size.toStringBestSI().c_str());
+    }
+    if (outbuf_size.hasUnits("B"))
+        outbuf_size *= UnitAlgebra("8b/B");
+
+    // The output credits are set to zero and the other side of the
+    // link will send the number of tokens.
+    for (int i = 0; i < req_vns; i++)
+        rtr_credits[i] = 0;
+
+    // Configure the links
+    // For now give it a fake timebase.  Will give it the real timebase during init
+    std::string port_name("rtr_port");
+    if (isAnonymous())
+        port_name = params.find<std::string>("port_name");
+
+    rtr_link = configureLink(port_name, std::string("1GHz"),
+                             new Event::Handler<LinkControl>(this, &LinkControl::handle_input));
+
+    if (!rtr_link)
+        output.fatal(CALL_INFO, -1,
+                     "%s, unable to configure link for port '%s'. Check port validity and subcomponent sharing flags\n",
+                     getName().c_str(), port_name.c_str());
+
+    output_timing = configureSelfLink(port_name + "_output_timing", "1GHz",
+                                      new Event::Handler<LinkControl>(this, &LinkControl::handle_output));
+
+    // Register statistics
+    packet_latency = registerStatistic<uint64_t>("packet_latency");
+    // send_bit_count = registerStatistic<uint64_t>("send_bit_count");
+    // output_port_stalls = registerStatistic<uint64_t>("output_port_stalls");
+    // idle_time = registerStatistic<uint64_t>("idle_time");
+}
+
+bool LinkControl::initialize(const std::string &port_name, const UnitAlgebra &link_bw_in, int vns,
+                             const UnitAlgebra &in_buf_size, const UnitAlgebra &out_buf_size) {
     req_vns = vns;
     link_bw = link_bw_in;
     if (link_bw.hasUnits("B/s")) {
@@ -87,9 +122,8 @@ auto LinkControl::initialize(const std::string &port_name, const UnitAlgebra &li
                      "bits or bytes: %s\n",
                      inbuf_size.toStringBestSI().c_str());
     }
-    if (inbuf_size.hasUnits("B")) {
+    if (inbuf_size.hasUnits("B"))
         inbuf_size *= UnitAlgebra("8b/B");
-    }
 
     outbuf_size = out_buf_size;
     if (!outbuf_size.hasUnits("b") && !outbuf_size.hasUnits("B")) {
@@ -98,15 +132,13 @@ auto LinkControl::initialize(const std::string &port_name, const UnitAlgebra &li
                      "bits or bytes: %s\n",
                      outbuf_size.toStringBestSI().c_str());
     }
-    if (outbuf_size.hasUnits("B")) {
+    if (outbuf_size.hasUnits("B"))
         outbuf_size *= UnitAlgebra("8b/B");
-    }
 
     // The output credits are set to zero and the other side of the
     // link will send the number of tokens.
-    for (int i = 0; i < req_vns; i++) {
+    for (int i = 0; i < req_vns; i++)
         rtr_credits[i] = 0;
-    }
 
     // Configure the links
     // For now give it a fake timebase.  Will give it the real timebase during init
@@ -116,9 +148,8 @@ auto LinkControl::initialize(const std::string &port_name, const UnitAlgebra &li
                              new Event::Handler<LinkControl>(this, &LinkControl::handle_input));
     // output_timing = rif->configureSelfLink(port_name + "_output_timing", time_base,
     //         new Event::Handler<LinkControl>(this,&LinkControl::handle_output));
-    output_timing =
-        configureSelfLink(port_name + "_output_timing", "1GHz",
-                          new Event::Handler<LinkControl>(this, &LinkControl::handle_output));
+    output_timing = configureSelfLink(port_name + "_output_timing", "1GHz",
+                                      new Event::Handler<LinkControl>(this, &LinkControl::handle_output));
 
     // Register statistics
     packet_latency = registerStatistic<uint64_t>("packet_latency");
@@ -138,7 +169,7 @@ LinkControl::~LinkControl() {
 }
 
 void LinkControl::setup() {
-    while (static_cast<unsigned int>(!init_events.empty()) != 0U) {
+    while (init_events.size()) {
         delete init_events.front();
         init_events.pop_front();
     }
@@ -148,92 +179,88 @@ void LinkControl::init(unsigned int /*phase*/) {
     Event *ev;
     NocInitEvent *init_ev;
     switch (init_state) {
-        case 0: {
-            // output.output("LinkControl::init()\n");
-            // Tell the other side of the link that I'm an endpoint
-            init_ev = new NocInitEvent();
-            init_ev->command = NocInitEvent::REPORT_ENDPOINT;
-            init_ev->int_value = req_vns;
-            rtr_link->sendInitData(init_ev);
+    case 0: {
+        // output.output("LinkControl::init()\n");
+        // Tell the other side of the link that I'm an endpoint
+        init_ev = new NocInitEvent();
+        init_ev->command = NocInitEvent::REPORT_ENDPOINT;
+        init_ev->int_value = req_vns;
+        rtr_link->sendInitData(init_ev);
 
-            init_state = 1;
+        init_state = 1;
+        break;
+    }
+    case 1: {
+        ev = rtr_link->recvInitData();
+        if (nullptr == ev)
             break;
+        init_ev = static_cast<NocInitEvent *>(ev);
+        UnitAlgebra flit_size_ua = init_ev->ua_value;
+        flit_size = flit_size_ua.getRoundedValue();
+
+        UnitAlgebra link_clock = link_bw / flit_size_ua;
+
+        TimeConverter *tc = getTimeConverter(link_clock);
+        output_timing->setDefaultTimeBase(tc);
+
+        for (int i = 0; i < req_vns; ++i) {
+            outbuf_credits[i] = outbuf_size.getRoundedValue() / flit_size;
+            in_ret_credits[i] = inbuf_size.getRoundedValue() / flit_size;
         }
-        case 1: {
-            ev = rtr_link->recvInitData();
-            if (nullptr == ev) {
-                break;
-            }
-            init_ev = dynamic_cast<NocInitEvent *>(ev);
-            UnitAlgebra flit_size_ua = init_ev->ua_value;
-            flit_size = flit_size_ua.getRoundedValue();
 
-            UnitAlgebra link_clock = link_bw / flit_size_ua;
-
-            TimeConverter *tc = getTimeConverter(link_clock);
-            output_timing->setDefaultTimeBase(tc);
-
-            for (int i = 0; i < req_vns; ++i) {
-                outbuf_credits[i] = outbuf_size.getRoundedValue() / flit_size;
-                in_ret_credits[i] = inbuf_size.getRoundedValue() / flit_size;
-            }
-
-            init_state = 2;
+        init_state = 2;
+        break;
+    }
+    case 2: {
+        ev = rtr_link->recvInitData();
+        if (nullptr == ev)
             break;
-        }
-        case 2: {
-            ev = rtr_link->recvInitData();
-            if (nullptr == ev) {
-                break;
-            }
-            init_ev = dynamic_cast<NocInitEvent *>(ev);
-            id = init_ev->int_value;
+        init_ev = static_cast<NocInitEvent *>(ev);
+        id = init_ev->int_value;
 
-            // Send credit event to router
-            auto *cr_ev = new credit_event(0, inbuf_size.getRoundedValue() / flit_size);
-            rtr_link->sendInitData(cr_ev);
+        // Send credit event to router
+        auto *cr_ev = new credit_event(0, inbuf_size.getRoundedValue() / flit_size);
+        rtr_link->sendInitData(cr_ev);
 
-            // network_initialized = true;
-            init_state = 3;
-            break;
-        }
-        case 3:
-            network_initialized = true;
-            init_state = 4;
-            // Falls through on purpose
-        default:
-            // For all other phases, look for credit events, any other
-            // events get passed up to containing component by adding them
-            // to init_events queue
-            while ((ev = rtr_link->recvInitData()) != nullptr) {
-                auto *bev = dynamic_cast<BaseNocEvent *>(ev);
-                switch (bev->getType()) {
-                    case BaseNocEvent::CREDIT: {
-                        auto *ce = dynamic_cast<credit_event *>(bev);
-                        // output.output("%d: Got a credit event for VN %d with %d
-                        // credits\n",id,ce->vn,ce->credits);
-                        if (ce->vn < req_vns) {  // Ignore credit events for VNs I don't have
-                            rtr_credits[ce->vn] += ce->credits;
-                        }
-                        delete ev;
-                        // if ( waiting && have_packets ) {
-                        //     output_timing->send(1,NULL);
-                        //     waiting = false;
-                        // }
-                    } break;
-                    case BaseNocEvent::PACKET:
-                        init_events.push_back(dynamic_cast<NocPacket *>(ev));
-                        break;
-                    default:
-                        // This shouldn't happen.  Only NocPackets (PACKET
-                        // types) should not be handled in the LinkControl
-                        // object.
-                        // output.fatal(CALL_INFO, 1, "Reached state where a non-NocPacket was not
-                        // handled.");
-                        break;
+        // network_initialized = true;
+        init_state = 3;
+        break;
+    }
+    case 3:
+        network_initialized = true;
+        init_state = 4;
+        // Falls through on purpose
+    default:
+        // For all other phases, look for credit events, any other
+        // events get passed up to containing component by adding them
+        // to init_events queue
+        while ((ev = rtr_link->recvInitData()) != nullptr) {
+            auto *bev = static_cast<BaseNocEvent *>(ev);
+            switch (bev->getType()) {
+            case BaseNocEvent::CREDIT: {
+                auto *ce = static_cast<credit_event *>(bev);
+                // output.output("%d: Got a credit event for VN %d with %d credits\n",id,ce->vn,ce->credits);
+                if (ce->vn < req_vns) { // Ignore credit events for VNs I don't have
+                    rtr_credits[ce->vn] += ce->credits;
                 }
+                delete ev;
+                // if ( waiting && have_packets ) {
+                //     output_timing->send(1,NULL);
+                //     waiting = false;
+                // }
+            } break;
+            case BaseNocEvent::PACKET:
+                init_events.push_back(static_cast<NocPacket *>(ev));
+                break;
+            default:
+                // This shouldn't happen.  Only NocPackets (PACKET
+                // types) should not be handled in the LinkControl
+                // object.
+                // output.fatal(CALL_INFO, 1, "Reached state where a non-NocPacket was not handled.");
+                break;
             }
-            break;
+        }
+        break;
     }
 }
 
@@ -244,33 +271,32 @@ void LinkControl::complete(unsigned int /*phase*/) {
     // events get passed up to containing component by adding them
     // to init_events queue
     while ((ev = rtr_link->recvInitData()) != nullptr) {
-        auto *bev = dynamic_cast<BaseNocEvent *>(ev);
+        auto *bev = static_cast<BaseNocEvent *>(ev);
         switch (bev->getType()) {
-            case BaseNocEvent::CREDIT: {
-                auto *ce = dynamic_cast<credit_event *>(bev);
-                // output.output("%d: Got a credit event for VN %d with %d
-                // credits\n",id,ce->vn,ce->credits);
-                if (ce->vn < req_vns) {  // Ignore credit events for VNs I don't have
-                    rtr_credits[ce->vn] += ce->credits;
-                }
-                delete ev;
-                // if ( waiting && have_packets ) {
-                //     output_timing->send(1,NULL);
-                //     waiting = false;
-                // }
-            } break;
-            case BaseNocEvent::PACKET:
-                init_events.push_back(dynamic_cast<NocPacket *>(ev));
-                break;
-            default:
-                // This shouldn't happen.  Only NocPackets (PACKET
-                // types) should not be handled in the LinkControl
-                // object.
-                // output.fatal(CALL_INFO, 1, "Reached state where a non-NocPacket was not
-                // handled.");
-                break;
+        case BaseNocEvent::CREDIT: {
+            auto *ce = static_cast<credit_event *>(bev);
+            // output.output("%d: Got a credit event for VN %d with %d credits\n",id,ce->vn,ce->credits);
+            if (ce->vn < req_vns) { // Ignore credit events for VNs I don't have
+                rtr_credits[ce->vn] += ce->credits;
+            }
+            delete ev;
+            // if ( waiting && have_packets ) {
+            //     output_timing->send(1,NULL);
+            //     waiting = false;
+            // }
+        } break;
+        case BaseNocEvent::PACKET:
+            init_events.push_back(static_cast<NocPacket *>(ev));
+            break;
+        default:
+            // This shouldn't happen.  Only NocPackets (PACKET
+            // types) should not be handled in the LinkControl
+            // object.
+            // output.fatal(CALL_INFO, 1, "Reached state where a non-NocPacket was not handled.");
+            break;
         }
     }
+    return;
 }
 
 void LinkControl::finish() {
@@ -291,18 +317,16 @@ void LinkControl::finish() {
 
 // Returns true if there is space in the output buffer and false
 // otherwise.
-auto LinkControl::send(SimpleNetwork::Request *req, int vn) -> bool {
-    if (vn >= req_vns) {
+bool LinkControl::send(SimpleNetwork::Request *req, int vn) {
+    if (vn >= req_vns)
         return false;
-    }
     req->vn = vn;
     auto *ev = new NocPacket(req);
     int flits = (ev->request->size_in_bits + (flit_size - 1)) / flit_size;
     ev->setSizeInFlits(flits);
 
-    if (outbuf_credits[vn] < flits) {
+    if (outbuf_credits[vn] < flits)
         return false;
-    }
 
     outbuf_credits[vn] -= flits;
 
@@ -316,8 +340,8 @@ auto LinkControl::send(SimpleNetwork::Request *req, int vn) -> bool {
     }
 
     if (ev->getTraceType() != SimpleNetwork::Request::NONE) {
-        output.output("TRACE(%d): %" PRIu64 " ns: Send on LinkControl in NIC: %s\n",
-                      ev->getTraceID(), getCurrentSimTimeNano(), getName().c_str());
+        output.output("TRACE(%d): %" PRIu64 " ns: Send on LinkControl in NIC: %s\n", ev->getTraceID(),
+                      getCurrentSimTimeNano(), getName().c_str());
     }
 
     return true;
@@ -325,16 +349,17 @@ auto LinkControl::send(SimpleNetwork::Request *req, int vn) -> bool {
 
 // Returns true if there is space in the output buffer and false
 // otherwise.
-auto LinkControl::spaceToSend(int vn, int bits) -> bool {
-    return (outbuf_credits[vn] * flit_size) >= bits;
+bool LinkControl::spaceToSend(int vn, int bits) {
+    if ((outbuf_credits[vn] * flit_size) < bits)
+        return false;
+    return true;
 }
 
 // Returns NULL if no event in input_buf[vn]. Otherwise, returns
 // the next event.
-auto LinkControl::recv(int vn) -> SST::Interfaces::SimpleNetwork::Request * {
-    if (input_buf[vn].empty()) {
+SST::Interfaces::SimpleNetwork::Request *LinkControl::recv(int vn) {
+    if (input_buf[vn].size() == 0)
         return nullptr;
-    }
 
     NocPacket *event = input_buf[vn].front();
     input_buf[vn].pop();
@@ -349,12 +374,11 @@ auto LinkControl::recv(int vn) -> SST::Interfaces::SimpleNetwork::Request * {
     rtr_link->send(new credit_event(event->request->vn, in_ret_credits[event->request->vn]));
     in_ret_credits[event->request->vn] = 0;
 
-    // printf("%d: Returning credits on VN: %d for packet from %llu",id, event->request->vn,
-    // event->request->src); std::cout << std::endl;
+    // printf("%d: Returning credits on VN: %d for packet from %llu",id, event->request->vn, event->request->src);
+    // std::cout << std::endl;
 
     // if ( event->getTraceType() != SimpleNetwork::Request::NONE ) {
-    //     output.output("TRACE(%d): %" PRIu64 " ns: recv called on LinkControl in NIC:
-    //     %s\n",event->getTraceID(),
+    //     output.output("TRACE(%d): %" PRIu64 " ns: recv called on LinkControl in NIC: %s\n",event->getTraceID(),
     //                   getCurrentSimTimeNano(), getName().c_str());
     //     // std::cout << "TRACE(" << event->getTraceID() << "): " << getCurrentSimTimeNano()
     //     //           << " ns: recv called on LinkControl in NIC: "
@@ -371,16 +395,17 @@ void LinkControl::sendInitData(SST::Interfaces::SimpleNetwork::Request *req) {
     rtr_link->sendInitData(new NocPacket(req));
 }
 
-auto LinkControl::recvInitData() -> SST::Interfaces::SimpleNetwork::Request * {
-    if (static_cast<unsigned int>(!init_events.empty()) != 0U) {
+SST::Interfaces::SimpleNetwork::Request *LinkControl::recvInitData() {
+    if (init_events.size()) {
         NocPacket *ev = init_events.front();
         init_events.pop_front();
         SST::Interfaces::SimpleNetwork::Request *ret = ev->request;
         ev->request = nullptr;
         delete ev;
         return ret;
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 
 void LinkControl::handle_input(Event *ev) {
@@ -388,47 +413,45 @@ void LinkControl::handle_input(Event *ev) {
     // Check to see if this is a credit or data packet
     // credit_event* ce = dynamic_cast<credit_event*>(ev);
     // if ( ce != NULL ) {
-    auto *bev = dynamic_cast<BaseNocEvent *>(ev);
+    auto *bev = static_cast<BaseNocEvent *>(ev);
     switch (bev->getType()) {
-        case BaseNocEvent::CREDIT: {
-            auto *ce = dynamic_cast<credit_event *>(ev);
-            rtr_credits[ce->vn] += ce->credits;
-            delete ev;
+    case BaseNocEvent::CREDIT: {
+        auto *ce = static_cast<credit_event *>(ev);
+        rtr_credits[ce->vn] += ce->credits;
+        delete ev;
 
-            // If we're waiting, we need to send a wakeup event to the
-            // output queues
-            if (waiting) {
-                output_timing->send(0, nullptr);
-                waiting = false;
-            }
-            break;
+        // If we're waiting, we need to send a wakeup event to the
+        // output queues
+        if (waiting) {
+            output_timing->send(0, nullptr);
+            waiting = false;
+        }
+        break;
+    }
+
+    case BaseNocEvent::PACKET: {
+        auto *event = static_cast<NocPacket *>(ev);
+        input_buf[event->vn].push(event);
+
+        if (event->request->getTraceType() == SimpleNetwork::Request::FULL) {
+            output.output("TRACE(%d): %" PRIu64 " ns: Received an event on LinkControl in NIC: %s"
+                          " on VN %d from src %" PRIu64 "\n",
+                          event->request->getTraceID(), getCurrentSimTimeNano(), getName().c_str(), event->request->vn,
+                          event->request->src);
+        }
+        SimTime_t lat = getCurrentSimTimeNano() - event->getInjectionTime();
+        packet_latency->addData(lat);
+
+        if (receiveFunctor != nullptr) {
+            bool keep = (*receiveFunctor)(0 /*event->vn*/);
+            if (!keep)
+                receiveFunctor = nullptr;
         }
 
-        case BaseNocEvent::PACKET: {
-            auto *event = dynamic_cast<NocPacket *>(ev);
-            input_buf[event->vn].push(event);
-
-            if (event->request->getTraceType() == SimpleNetwork::Request::FULL) {
-                output.output("TRACE(%d): %" PRIu64
-                              " ns: Received an event on LinkControl in NIC: %s"
-                              " on VN %d from src %" PRIu64 "\n",
-                              event->request->getTraceID(), getCurrentSimTimeNano(),
-                              getName().c_str(), event->request->vn, event->request->src);
-            }
-            SimTime_t lat = getCurrentSimTimeNano() - event->getInjectionTime();
-            packet_latency->addData(lat);
-
-            if (receiveFunctor != nullptr) {
-                bool keep = (*receiveFunctor)(0 /*event->vn*/);
-                if (!keep) {
-                    receiveFunctor = nullptr;
-                }
-            }
-
-            break;
-        }
-        default:
-            break;
+        break;
+    }
+    default:
+        break;
     }
 }
 
@@ -472,26 +495,24 @@ void LinkControl::handle_output(Event * /*ev*/) {
         // Subtract credits
         rtr_credits[vn] -= size;
 
-        // printf("%d: Sending packet to %llu on VN: %d",id, send_event->request->dest,
-        // send_event->request->vn); std::cout << std::endl;
+        // printf("%d: Sending packet to %llu on VN: %d",id, send_event->request->dest, send_event->request->vn);
+        // std::cout << std::endl;
 
         rtr_link->send(send_event);
-        // std::cout << "Sent packet on vn " << vn_to_send << ", credits remaining: " <<
-        // rtr_credits[vn_to_send] << std::endl;
+        // std::cout << "Sent packet on vn " << vn_to_send << ", credits remaining: " << rtr_credits[vn_to_send] <<
+        // std::endl;
 
         if (send_event->getTraceType() == SimpleNetwork::Request::FULL) {
-            output.output("TRACE(%d): %" PRIu64
-                          " ns: Sent an event to router from LinkControl"
+            output.output("TRACE(%d): %" PRIu64 " ns: Sent an event to router from LinkControl"
                           " in NIC: %s on VN %d to dest %" PRIu64 ".\n",
-                          send_event->getTraceID(), getCurrentSimTimeNano(), getName().c_str(),
-                          send_event->request->vn, send_event->request->dest);
+                          send_event->getTraceID(), getCurrentSimTimeNano(), getName().c_str(), send_event->request->vn,
+                          send_event->request->dest);
         }
 
         if (sendFunctor != nullptr) {
             bool keep = (*sendFunctor)(vn);
-            if (!keep) {
+            if (!keep)
                 sendFunctor = nullptr;
-            }
         }
     } else {
         waiting = true;
@@ -512,12 +533,12 @@ void LinkControl::printStatus(Output &out) {
         out.output("    <empty>\n");
     } else {
         NocPacket *event = output_buf[0].front();
-        out.output("      src = %lld, dest = %lld, flits = %d\n", event->request->src,
-                   event->request->dest, event->getSizeInFlits());
+        out.output("      src = %ld, dest = %ld, flits = %d\n", event->request->src, event->request->dest,
+                   event->getSizeInFlits());
     }
 
     out.output("End LinkControl for Component %s\n", getName().c_str());
 }
 
-}  // namespace Kingsley
-}  // namespace SST
+} // namespace Kingsley
+} // namespace SST

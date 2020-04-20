@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // Portions are copyright of other developers:
@@ -23,8 +23,8 @@ using namespace SST;
 namespace SST {
 namespace Kingsley {
 
-template <typename T>
-class lru_unit {
+template <typename T> class lru_unit {
+
     std::vector<T> priority[2];
     T *current_list;
     T *sat_list;
@@ -41,8 +41,8 @@ class lru_unit {
         current = next;
     }
 
-   public:
-    lru_unit() = default;
+  public:
+    lru_unit() {}
 
     // Called once all the entries have been initialized
     void finalize() {
@@ -53,26 +53,23 @@ class lru_unit {
     }
 
     void insert(T data) {
-        if (finalized) {
+        if (finalized)
             throw std::string("lru_unit: Attempt to insert into a finalized unit.\n");
-        }
         priority[0].push_back(data);
     }
 
     // Gets the highest priority entry.
-    auto top() -> const T & {
-        if (!finalized) {
+    const T &top() {
+        if (!finalized)
             throw std::string("lru_unit: Attempt to access top element before finalizing unit.\n");
-        }
         return *current_list;
     }
 
     // Declares whether the top entry was satisfied or not.  Moves
     // next entry to top.
     void satisfied(bool sat) {
-        if (!finalized) {
+        if (!finalized)
             throw std::string("lru_unit: Attempt to call satisfied() before finalizing unit.\n");
-        }
         if (sat) {
             *sat_list = *current_list;
             sat_list--;
@@ -87,7 +84,7 @@ class lru_unit {
         }
     }
 
-    auto size() -> size_t { return priority[0].size(); }
+    size_t size() { return priority[0].size(); }
 
     // void print() {
     //     for ( unsigned int i = 0; i < priority[current].size(); ++i ) {
@@ -96,7 +93,7 @@ class lru_unit {
     // }
 };
 
-}  // namespace Kingsley
-}  // namespace SST
+} // namespace Kingsley
+} // namespace SST
 
-#endif  // COMPONENTS_KINGSLEY_LRU_UNIT_H
+#endif // COMPONENTS_KINGSLEY_LRU_UNIT_H
