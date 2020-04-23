@@ -1,0 +1,65 @@
+In file included from /home/sabbir/sst-elements-org/kingsley/linkControl.cc:18:
+In file included from /home/sabbir/sst-elements-org/kingsley/linkControl.h:28:
+/home/sabbir/sst-elements-org/kingsley/nocEvents.h:86:70: warning: format specifies type 'long long' but the argument has type 'SST::Interfaces::SimpleNetwork::nid_t' (aka 'long') [-Wformat]
+                   header.c_str(), getDeliveryTime(), getPriority(), request->src, request->dest);
+                                                                     ^~~~~~~~~~~~
+/home/sabbir/sst-elements-org/kingsley/nocEvents.h:86:84: warning: format specifies type 'long long' but the argument has type 'SST::Interfaces::SimpleNetwork::nid_t' (aka 'long') [-Wformat]
+                   header.c_str(), getDeliveryTime(), getPriority(), request->src, request->dest);
+                                                                                   ^~~~~~~~~~~~~
+In file included from /home/sabbir/sst-elements-org/kingsley/linkControl.cc:18:
+/home/sabbir/sst-elements-org/kingsley/linkControl.h:54:110: warning: missing field 'defaultValue' initializer [-Wmissing-field-initializers]
+                             "Bandwidth of the links specified in either b/s or B/s (can include SI prefix)."},
+                                                                                                             ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.h:57:35: warning: missing field 'defaultValue' initializer [-Wmissing-field-initializers]
+                             "1kB"},
+                                  ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.h:60:35: warning: missing field 'defaultValue' initializer [-Wmissing-field-initializers]
+                             "1kB"})
+                                  ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:30:75: warning: field 'network_initialized' will be initialized after field 'output' [-Wreorder-ctor]
+      have_packets(false), receiveFunctor(nullptr), sendFunctor(nullptr), network_initialized(false),
+                                                                          ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:269:19: warning: unused variable 'init_ev' [-Wunused-variable]
+    NocInitEvent *init_ev;
+                  ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:536:67: warning: format specifies type 'long long' but the argument has type 'SST::Interfaces::SimpleNetwork::nid_t' (aka 'long') [-Wformat]
+        out.output("      src = %lld, dest = %lld, flits = %d\n", event->request->src, event->request->dest,
+                                ~~~~                              ^~~~~~~~~~~~~~~~~~~
+                                %ld
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:536:88: warning: format specifies type 'long long' but the argument has type 'SST::Interfaces::SimpleNetwork::nid_t' (aka 'long') [-Wformat]
+        out.output("      src = %lld, dest = %lld, flits = %d\n", event->request->src, event->request->dest,
+                                             ~~~~                                      ^~~~~~~~~~~~~~~~~~~~
+                                             %ld
+9 warnings generated.
+In file included from /home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:15:
+In file included from /home/sabbir/sst-elements-org/kingsley/noc_mesh.h:31:
+/home/sabbir/sst-elements-org/kingsley/nocEvents.h:86:70: warning: format specifies type 'long long' but the argument has type 'SST::Interfaces::SimpleNetwork::nid_t' (aka 'long') [-Wformat]
+                   header.c_str(), getDeliveryTime(), getPriority(), request->src, request->dest);
+                                                                     ^~~~~~~~~~~~
+/home/sabbir/sst-elements-org/kingsley/nocEvents.h:86:84: warning: format specifies type 'long long' but the argument has type 'SST::Interfaces::SimpleNetwork::nid_t' (aka 'long') [-Wformat]
+                   header.c_str(), getDeliveryTime(), getPriority(), request->src, request->dest);
+                                                                                   ^~~~~~~~~~~~~
+In file included from /home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:15:
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.h:49:101: warning: missing field 'defaultValue' initializer [-Wmissing-field-initializers]
+        {"link_bw", "Bandwidth of the links specified in either b/s or B/s (can include SI prefix)."},
+                                                                                                    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.h:50:86: warning: missing field 'defaultValue' initializer [-Wmissing-field-initializers]
+        {"flit_size", "Flit size specified in either b or B (can include SI prefix)."},
+                                                                                     ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.h:51:114: warning: missing field 'defaultValue' initializer [-Wmissing-field-initializers]
+        {"input_buf_size", "Size of input buffers in either b or B (can use SI prefix).  Default is 2*flit_size."},
+                                                                                                                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:323:38: warning: comparison of integers of different signs: 'int' and 'SST::Cycle_t' (aka 'unsigned long') [-Wsign-compare]
+        port_busy[i] = (port_busy[i] < cyclesOff) ? 0 : port_busy[i] - cyclesOff;
+                        ~~~~~~~~~~~~ ^ ~~~~~~~~~
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:989:31: warning: comparison of integers of different signs: 'int' and 'std::vector::size_type' (aka 'unsigned long') [-Wsign-compare]
+            for (int i = 0; i < ep_ids.size(); ++i) {
+                            ~ ^ ~~~~~~~~~~~~~
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1298:91: warning: format specifies type 'long long' but the argument has type 'SST::Interfaces::SimpleNetwork::nid_t' (aka 'long') [-Wformat]
+                out.output("      src = %lld, dest = %lld, next_port = %d, flits = %d\n", event->encap_ev->request->src,
+                                        ~~~~                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                        %ld
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1299:28: warning: format specifies type 'long long' but the argument has type 'SST::Interfaces::SimpleNetwork::nid_t' (aka 'long') [-Wformat]
+                           event->encap_ev->request->dest, event->next_port, event->encap_ev->getSizeInFlits());
+                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+9 warnings generated.

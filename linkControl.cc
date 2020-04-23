@@ -27,8 +27,8 @@ namespace Kingsley {
 LinkControl::LinkControl(ComponentId_t id, Params &params, int vns)
     : SST::Interfaces::SimpleNetwork(id), init_state(0), rtr_link(nullptr), output_timing(nullptr), req_vns(vns),
       id(-1), input_buf(nullptr), output_buf(nullptr), rtr_credits(nullptr), in_ret_credits(nullptr), waiting(true),
-      have_packets(false), receiveFunctor(nullptr), sendFunctor(nullptr),
-      output(Simulation::getSimulation()->getSimulationOutput()), network_initialized(false) {
+      have_packets(false), receiveFunctor(nullptr), sendFunctor(nullptr), network_initialized(false),
+      output(Simulation::getSimulation()->getSimulationOutput()) {
     link_bw = params.find<UnitAlgebra>("link_bw");
     if (link_bw.hasUnits("B/s")) {
         link_bw *= UnitAlgebra("8b/B");
@@ -533,7 +533,7 @@ void LinkControl::printStatus(Output &out) {
         out.output("    <empty>\n");
     } else {
         NocPacket *event = output_buf[0].front();
-        out.output("      src = %ld, dest = %ld, flits = %d\n", event->request->src, event->request->dest,
+        out.output("      src = %lld, dest = %lld, flits = %d\n", event->request->src, event->request->dest,
                    event->getSizeInFlits());
     }
 

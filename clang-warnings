@@ -1,0 +1,817 @@
+Enabled checks:
+    clang-analyzer-apiModeling.StdCLibraryFunctions
+    clang-analyzer-apiModeling.TrustNonnull
+    clang-analyzer-apiModeling.google.GTest
+    clang-analyzer-apiModeling.llvm.CastValue
+    clang-analyzer-apiModeling.llvm.ReturnValue
+    clang-analyzer-core.CallAndMessage
+    clang-analyzer-core.DivideZero
+    clang-analyzer-core.DynamicTypePropagation
+    clang-analyzer-core.NonNullParamChecker
+    clang-analyzer-core.NonnilStringConstants
+    clang-analyzer-core.NullDereference
+    clang-analyzer-core.StackAddrEscapeBase
+    clang-analyzer-core.StackAddressEscape
+    clang-analyzer-core.UndefinedBinaryOperatorResult
+    clang-analyzer-core.VLASize
+    clang-analyzer-core.builtin.BuiltinFunctions
+    clang-analyzer-core.builtin.NoReturnFunctions
+    clang-analyzer-core.uninitialized.ArraySubscript
+    clang-analyzer-core.uninitialized.Assign
+    clang-analyzer-core.uninitialized.Branch
+    clang-analyzer-core.uninitialized.CapturedBlockVariable
+    clang-analyzer-core.uninitialized.UndefReturn
+    clang-analyzer-cplusplus.InnerPointer
+    clang-analyzer-cplusplus.Move
+    clang-analyzer-cplusplus.NewDelete
+    clang-analyzer-cplusplus.NewDeleteLeaks
+    clang-analyzer-cplusplus.PureVirtualCall
+    clang-analyzer-cplusplus.SelfAssignment
+    clang-analyzer-cplusplus.SmartPtr
+    clang-analyzer-cplusplus.VirtualCallModeling
+    clang-analyzer-deadcode.DeadStores
+    clang-analyzer-fuchsia.HandleChecker
+    clang-analyzer-nullability.NullPassedToNonnull
+    clang-analyzer-nullability.NullReturnedFromNonnull
+    clang-analyzer-nullability.NullabilityBase
+    clang-analyzer-nullability.NullableDereferenced
+    clang-analyzer-nullability.NullablePassedToNonnull
+    clang-analyzer-nullability.NullableReturnedFromNonnull
+    clang-analyzer-optin.cplusplus.UninitializedObject
+    clang-analyzer-optin.cplusplus.VirtualCall
+    clang-analyzer-optin.mpi.MPI-Checker
+    clang-analyzer-optin.osx.OSObjectCStyleCast
+    clang-analyzer-optin.osx.cocoa.localizability.EmptyLocalizationContextChecker
+    clang-analyzer-optin.osx.cocoa.localizability.NonLocalizedStringChecker
+    clang-analyzer-optin.performance.GCDAntipattern
+    clang-analyzer-optin.performance.Padding
+    clang-analyzer-optin.portability.UnixAPI
+    clang-analyzer-osx.API
+    clang-analyzer-osx.MIG
+    clang-analyzer-osx.NSOrCFErrorDerefChecker
+    clang-analyzer-osx.NumberObjectConversion
+    clang-analyzer-osx.OSObjectRetainCount
+    clang-analyzer-osx.ObjCProperty
+    clang-analyzer-osx.SecKeychainAPI
+    clang-analyzer-osx.cocoa.AtSync
+    clang-analyzer-osx.cocoa.AutoreleaseWrite
+    clang-analyzer-osx.cocoa.ClassRelease
+    clang-analyzer-osx.cocoa.Dealloc
+    clang-analyzer-osx.cocoa.IncompatibleMethodTypes
+    clang-analyzer-osx.cocoa.Loops
+    clang-analyzer-osx.cocoa.MissingSuperCall
+    clang-analyzer-osx.cocoa.NSAutoreleasePool
+    clang-analyzer-osx.cocoa.NSError
+    clang-analyzer-osx.cocoa.NilArg
+    clang-analyzer-osx.cocoa.NonNilReturnValue
+    clang-analyzer-osx.cocoa.ObjCGenerics
+    clang-analyzer-osx.cocoa.RetainCount
+    clang-analyzer-osx.cocoa.RetainCountBase
+    clang-analyzer-osx.cocoa.RunLoopAutoreleaseLeak
+    clang-analyzer-osx.cocoa.SelfInit
+    clang-analyzer-osx.cocoa.SuperDealloc
+    clang-analyzer-osx.cocoa.UnusedIvars
+    clang-analyzer-osx.cocoa.VariadicMethodTypes
+    clang-analyzer-osx.coreFoundation.CFError
+    clang-analyzer-osx.coreFoundation.CFNumber
+    clang-analyzer-osx.coreFoundation.CFRetainRelease
+    clang-analyzer-osx.coreFoundation.containers.OutOfBounds
+    clang-analyzer-osx.coreFoundation.containers.PointerSizedValues
+    clang-analyzer-security.FloatLoopCounter
+    clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+    clang-analyzer-security.insecureAPI.SecuritySyntaxChecker
+    clang-analyzer-security.insecureAPI.UncheckedReturn
+    clang-analyzer-security.insecureAPI.bcmp
+    clang-analyzer-security.insecureAPI.bcopy
+    clang-analyzer-security.insecureAPI.bzero
+    clang-analyzer-security.insecureAPI.decodeValueOfObjCType
+    clang-analyzer-security.insecureAPI.getpw
+    clang-analyzer-security.insecureAPI.gets
+    clang-analyzer-security.insecureAPI.mkstemp
+    clang-analyzer-security.insecureAPI.mktemp
+    clang-analyzer-security.insecureAPI.rand
+    clang-analyzer-security.insecureAPI.strcpy
+    clang-analyzer-security.insecureAPI.vfork
+    clang-analyzer-unix.API
+    clang-analyzer-unix.DynamicMemoryModeling
+    clang-analyzer-unix.Malloc
+    clang-analyzer-unix.MallocSizeof
+    clang-analyzer-unix.MismatchedDeallocator
+    clang-analyzer-unix.Vfork
+    clang-analyzer-unix.cstring.BadSizeArg
+    clang-analyzer-unix.cstring.CStringModeling
+    clang-analyzer-unix.cstring.NullArg
+    clang-analyzer-valist.CopyToSelf
+    clang-analyzer-valist.Uninitialized
+    clang-analyzer-valist.Unterminated
+    clang-analyzer-valist.ValistBase
+    misc-unused-alias-decls
+    misc-unused-parameters
+    misc-unused-using-decls
+    modernize-avoid-bind
+    modernize-avoid-c-arrays
+    modernize-concat-nested-namespaces
+    modernize-deprecated-headers
+    modernize-deprecated-ios-base-aliases
+    modernize-loop-convert
+    modernize-make-shared
+    modernize-make-unique
+    modernize-pass-by-value
+    modernize-raw-string-literal
+    modernize-redundant-void-arg
+    modernize-replace-auto-ptr
+    modernize-replace-random-shuffle
+    modernize-return-braced-init-list
+    modernize-shrink-to-fit
+    modernize-unary-static-assert
+    modernize-use-auto
+    modernize-use-bool-literals
+    modernize-use-default-member-init
+    modernize-use-emplace
+    modernize-use-equals-default
+    modernize-use-equals-delete
+    modernize-use-nodiscard
+    modernize-use-noexcept
+    modernize-use-nullptr
+    modernize-use-transparent-functors
+    modernize-use-uncaught-exceptions
+    modernize-use-using
+
+clang-apply-replacements version 10.0.0
+clang-tidy -export-fixes /tmp/tmpinwxwl4a/tmpydf_q17k.yaml -p=kingsley/build /home/sabbir/sst-elements-org/kingsley/linkControl.cc
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:32:14: warning: use nullptr [modernize-use-nullptr]
+    rtr_link(NULL), output_timing(NULL),
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:32:35: warning: use nullptr [modernize-use-nullptr]
+    rtr_link(NULL), output_timing(NULL),
+                                  ^~~~
+                                  nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:34:15: warning: use nullptr [modernize-use-nullptr]
+    input_buf(NULL), output_buf(NULL),
+              ^~~~
+              nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:34:33: warning: use nullptr [modernize-use-nullptr]
+    input_buf(NULL), output_buf(NULL),
+                                ^~~~
+                                nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:35:17: warning: use nullptr [modernize-use-nullptr]
+    rtr_credits(NULL), in_ret_credits(NULL),
+                ^~~~
+                nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:35:39: warning: use nullptr [modernize-use-nullptr]
+    rtr_credits(NULL), in_ret_credits(NULL),
+                                      ^~~~
+                                      nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:37:20: warning: use nullptr [modernize-use-nullptr]
+    receiveFunctor(NULL), sendFunctor(NULL),
+                   ^~~~
+                   nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:37:39: warning: use nullptr [modernize-use-nullptr]
+    receiveFunctor(NULL), sendFunctor(NULL),
+                                      ^~~~
+                                      nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:178:37: warning: parameter 'phase' is unused [misc-unused-parameters]
+void LinkControl::init(unsigned int phase)
+                                    ^~~~~
+                                     /*phase*/
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:198:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) break;
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:219:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) break;
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:224:9: warning: use auto when initializing with new to avoid duplicating the type name [modernize-use-auto]
+        credit_event* cr_ev = new credit_event(0,inbuf_size.getRoundedValue() / flit_size);
+        ^~~~~~~~~~~~
+        auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:239:54: warning: use nullptr [modernize-use-nullptr]
+        while ( ( ev = rtr_link->recvInitData() ) != NULL ) {
+                                                     ^~~~
+                                                     nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:240:13: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+            BaseNocEvent* bev = static_cast<BaseNocEvent*>(ev);
+            ^~~~~~~~~~~~
+            auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:244:17: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+                credit_event* ce = static_cast<credit_event*>(bev);
+                ^~~~~~~~~~~~
+                auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:271:41: warning: parameter 'phase' is unused [misc-unused-parameters]
+void LinkControl::complete(unsigned int phase)
+                                        ^~~~~
+                                         /*phase*/
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:278:50: warning: use nullptr [modernize-use-nullptr]
+    while ( ( ev = rtr_link->recvInitData() ) != NULL ) {
+                                                 ^~~~
+                                                 nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:279:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+        BaseNocEvent* bev = static_cast<BaseNocEvent*>(ev);
+        ^~~~~~~~~~~~
+        auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:283:13: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+            credit_event* ce = static_cast<credit_event*>(bev);
+            ^~~~~~~~~~~~
+            auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:310:26: warning: redundant void argument list in function definition [modernize-redundant-void-arg]
+void LinkControl::finish(void)
+                         ^~~~
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:333:5: warning: use auto when initializing with new to avoid duplicating the type name [modernize-use-auto]
+    NocPacket* ev = new NocPacket(req);
+    ^~~~~~~~~
+    auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:337:46: warning: Potential leak of memory pointed to by 'ev' [clang-analyzer-cplusplus.NewDeleteLeaks]
+    if ( outbuf_credits[vn] < flits ) return false;
+                                             ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:331:10: note: Assuming 'vn' is < field 'req_vns'
+    if ( vn >= req_vns ) return false;
+         ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:331:5: note: Taking false branch
+    if ( vn >= req_vns ) return false;
+    ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:333:21: note: Memory is allocated
+    NocPacket* ev = new NocPacket(req);
+                    ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:337:10: note: Assuming the condition is true
+    if ( outbuf_credits[vn] < flits ) return false;
+         ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:337:5: note: Taking true branch
+    if ( outbuf_credits[vn] < flits ) return false;
+    ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:337:46: note: Potential leak of memory pointed to by 'ev'
+    if ( outbuf_credits[vn] < flits ) return false;
+                                             ^
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:346:31: warning: use nullptr [modernize-use-nullptr]
+        output_timing->send(1,NULL);
+                              ^~~~
+                              nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:370:45: warning: use nullptr [modernize-use-nullptr]
+    if ( input_buf[vn].size() == 0 ) return NULL;
+                                            ^~~~
+                                            nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:397:22: warning: use nullptr [modernize-use-nullptr]
+    event->request = NULL;
+                     ^~~~
+                     nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:413:23: warning: use nullptr [modernize-use-nullptr]
+        ev->request = NULL;
+                      ^~~~
+                      nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:417:16: warning: use nullptr [modernize-use-nullptr]
+        return NULL;
+               ^~~~
+               nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:429:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+    BaseNocEvent* bev = static_cast<BaseNocEvent*>(ev);
+    ^~~~~~~~~~~~
+    auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:433:6: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+        credit_event* ce = static_cast<credit_event*>(ev);
+        ^~~~~~~~~~~~
+        auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:440:35: warning: use nullptr [modernize-use-nullptr]
+            output_timing->send(0,NULL);
+                                  ^~~~
+                                  nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:448:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+        NocPacket* event = static_cast<NocPacket*>(ev);
+        ^~~~~~~~~
+        auto
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:463:32: warning: use nullptr [modernize-use-nullptr]
+        if ( receiveFunctor != NULL ) {
+                               ^~~~
+                               nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:465:42: warning: use nullptr [modernize-use-nullptr]
+            if ( !keep) receiveFunctor = NULL;
+                                         ^~~~
+                                         nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:476:40: warning: parameter 'ev' is unused [misc-unused-parameters]
+void LinkControl::handle_output(Event* ev)
+                                       ^~
+                                        /*ev*/
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:509:34: warning: use nullptr [modernize-use-nullptr]
+        output_timing->send(size,NULL);
+                                 ^~~~
+                                 nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:533:28: warning: use nullptr [modernize-use-nullptr]
+        if (sendFunctor != NULL ) {
+                           ^~~~
+                           nullptr
+/home/sabbir/sst-elements-org/kingsley/linkControl.cc:535:40: warning: use nullptr [modernize-use-nullptr]
+            if ( !keep ) sendFunctor = NULL;
+                                       ^~~~
+                                       nullptr
+clang-tidy -export-fixes /tmp/tmpinwxwl4a/tmpqqlj8qy2.yaml -p=kingsley/build /home/sabbir/sst-elements-org/kingsley/noc_mesh.cc
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:28:10: warning: inclusion of deprecated C++ header 'signal.h'; consider using 'csignal' instead [modernize-deprecated-headers]
+#include <signal.h>
+         ^~~~~~~~~~
+         <csignal>
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:38:11: warning: use '= default' to define a trivial destructor [modernize-use-equals-default]
+noc_mesh::~noc_mesh()
+          ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:51:15: warning: use nullptr [modernize-use-nullptr]
+    dense_map(NULL),
+              ^~~~
+              nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:106:5: warning: use auto when initializing with new to avoid duplicating the type name [modernize-use-auto]
+    Event::Handler<noc_mesh,int>* dummy_handler = new Event::Handler<noc_mesh,int>(this,&noc_mesh::handle_input_r2r,-1);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:226:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+    BaseNocEvent* base_ev = static_cast<BaseNocEvent*>(ev);
+    ^~~~~~~~~~~~
+    auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:230:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+        credit_event* credit_ret = static_cast<credit_event*>(ev);
+        ^~~~~~~~~~~~
+        auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:238:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+        noc_mesh_event* event = static_cast<noc_mesh_event*>(ev);
+        ^~~~~~~~~~~~~~
+        auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:257:5: warning: use auto when initializing with new to avoid duplicating the type name [modernize-use-auto]
+    noc_mesh_event* event = new noc_mesh_event(packet);
+    ^~~~~~~~~~~~~~
+    auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:318:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+    BaseNocEvent* base_ev = static_cast<BaseNocEvent*>(ev);
+    ^~~~~~~~~~~~
+    auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:322:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+        credit_event* credit_ret = static_cast<credit_event*>(ev);
+        ^~~~~~~~~~~~
+        auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:329:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+        NocPacket* packet = static_cast<NocPacket*>(ev);
+        ^~~~~~~~~
+        auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:429:43: warning: use nullptr [modernize-use-nullptr]
+                        event->encap_ev = NULL;
+                                          ^~~~
+                                          nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:448:21: warning: use auto when initializing with new to avoid duplicating the type name [modernize-use-auto]
+                    credit_event* cr_ev = new credit_event(0, flits);
+                    ^~~~~~~~~~~~
+                    auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:488:26: warning: use nullptr [modernize-use-nullptr]
+        if ( ports[i] != NULL ) {
+                         ^~~~
+                         nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:503:26: warning: use nullptr [modernize-use-nullptr]
+        if ( ports[i] != NULL ) {
+                         ^~~~
+                         nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:515:29: warning: parameter 'phase' is unused [misc-unused-parameters]
+noc_mesh::init(unsigned int phase)
+                            ^~~~~
+                             /*phase*/
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:569:30: warning: use nullptr [modernize-use-nullptr]
+            if ( ports[i] == NULL ) {
+                             ^~~~
+                             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:574:28: warning: use nullptr [modernize-use-nullptr]
+                if ( ev != NULL ) {
+                           ^~~~
+                           nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:645:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) break;
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:672:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) break;
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:689:18: warning: use nullptr [modernize-use-nullptr]
+            if ( NULL == ev ) {} // should have had an event
+                 ^~~~
+                 nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:691:18: warning: Access to field 'command' results in a dereference of a null pointer (loaded from variable 'nie') [clang-analyzer-core.NullDereference]
+            if ( nie->command == NocInitEvent::COMPUTE_X_SIZE ) {
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:559:5: note: Control jumps to 'case 3:'  at line 668
+    switch ( init_state ) {
+    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:672:14: note: Assuming 'ev' is not equal to NULL
+        if ( NULL == ev ) break;
+             ^
+/usr/local/lib/clang/10.0.0/include/stddef.h:84:18: note: expanded from macro 'NULL'
+#    define NULL __null
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:672:9: note: Taking false branch
+        if ( NULL == ev ) break;
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:675:14: note: Assuming field 'command' is not equal to SUM_ENDPOINTS
+        if ( nie->command == NocInitEvent::SUM_ENDPOINTS ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:675:9: note: Taking false branch
+        if ( nie->command == NocInitEvent::SUM_ENDPOINTS ) {
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:687:14: note: Assuming the condition is true
+        if ( edge_status & south_mask ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:687:9: note: Taking true branch
+        if ( edge_status & south_mask ) {
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:688:13: note: Value assigned to 'ev'
+            ev = ports[east_port]->recvInitData();
+            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:689:18: note: Assuming 'ev' is equal to NULL
+            if ( NULL == ev ) {} // should have had an event
+                 ^
+/usr/local/lib/clang/10.0.0/include/stddef.h:84:18: note: expanded from macro 'NULL'
+#    define NULL __null
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:689:13: note: Taking true branch
+            if ( NULL == ev ) {} // should have had an event
+            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:690:13: note: Null pointer value stored to 'nie'
+            nie = static_cast<NocInitEvent*>(ev);
+            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:691:18: note: Access to field 'command' results in a dereference of a null pointer (loaded from variable 'nie')
+            if ( nie->command == NocInitEvent::COMPUTE_X_SIZE ) {
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:718:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) break;
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:729:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) {} // should be an event
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:731:14: warning: Access to field 'command' results in a dereference of a null pointer (loaded from variable 'nie') [clang-analyzer-core.NullDereference]
+        if ( nie->command == NocInitEvent::COMPUTE_Y_SIZE ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:559:5: note: Control jumps to 'case 4:'  at line 715
+    switch ( init_state ) {
+    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:718:14: note: Assuming 'ev' is not equal to NULL
+        if ( NULL == ev ) break;
+             ^
+/usr/local/lib/clang/10.0.0/include/stddef.h:84:18: note: expanded from macro 'NULL'
+#    define NULL __null
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:718:9: note: Taking false branch
+        if ( NULL == ev ) break;
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:720:14: note: Assuming field 'command' is not equal to SUM_ENDPOINTS
+        if ( nie->command == NocInitEvent::SUM_ENDPOINTS ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:720:9: note: Taking false branch
+        if ( nie->command == NocInitEvent::SUM_ENDPOINTS ) {
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:728:9: note: Value assigned to 'ev'
+        ev = ports[north_port]->recvInitData();
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:729:14: note: Assuming 'ev' is equal to NULL
+        if ( NULL == ev ) {} // should be an event
+             ^
+/usr/local/lib/clang/10.0.0/include/stddef.h:84:18: note: expanded from macro 'NULL'
+#    define NULL __null
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:729:9: note: Taking true branch
+        if ( NULL == ev ) {} // should be an event
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:730:9: note: Null pointer value stored to 'nie'
+        nie = static_cast<NocInitEvent*>(ev);
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:731:14: note: Access to field 'command' results in a dereference of a null pointer (loaded from variable 'nie')
+        if ( nie->command == NocInitEvent::COMPUTE_Y_SIZE ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:747:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) break;
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:758:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) {} // should have been an event
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:760:14: warning: Access to field 'command' results in a dereference of a null pointer (loaded from variable 'nie') [clang-analyzer-core.NullDereference]
+        if ( nie->command == NocInitEvent::COMPUTE_Y_SIZE ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:559:5: note: Control jumps to 'case 5:'  at line 740
+    switch ( init_state ) {
+    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:747:14: note: Assuming 'ev' is not equal to NULL
+        if ( NULL == ev ) break;
+             ^
+/usr/local/lib/clang/10.0.0/include/stddef.h:84:18: note: expanded from macro 'NULL'
+#    define NULL __null
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:747:9: note: Taking false branch
+        if ( NULL == ev ) break;
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:749:14: note: Assuming field 'command' is not equal to SUM_ENDPOINTS
+        if ( nie->command == NocInitEvent::SUM_ENDPOINTS ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:749:9: note: Taking false branch
+        if ( nie->command == NocInitEvent::SUM_ENDPOINTS ) {
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:757:9: note: Value assigned to 'ev'
+        ev = ports[north_port]->recvInitData();
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:758:14: note: Assuming 'ev' is equal to NULL
+        if ( NULL == ev ) {} // should have been an event
+             ^
+/usr/local/lib/clang/10.0.0/include/stddef.h:84:18: note: expanded from macro 'NULL'
+#    define NULL __null
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:758:9: note: Taking true branch
+        if ( NULL == ev ) {} // should have been an event
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:759:9: note: Null pointer value stored to 'nie'
+        nie = static_cast<NocInitEvent*>(ev);
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:760:14: note: Access to field 'command' results in a dereference of a null pointer (loaded from variable 'nie')
+        if ( nie->command == NocInitEvent::COMPUTE_Y_SIZE ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:821:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) break;
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:891:14: warning: use nullptr [modernize-use-nullptr]
+        if ( NULL == ev ) break;
+             ^~~~
+             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:977:20: warning: use emplace_back instead of push_back [modernize-use-emplace]
+            ep_ids.push_back(std::make_pair(endpoint_id,tmp));
+                   ^~~~~~~~~~~~~~~~~~~~~~~~                ~
+                   emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:988:20: warning: use emplace_back instead of push_back [modernize-use-emplace]
+            ep_ids.push_back(std::make_pair(endpoint_id,tmp));
+                   ^~~~~~~~~~~~~~~~~~~~~~~~                ~
+                   emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:999:20: warning: use emplace_back instead of push_back [modernize-use-emplace]
+            ep_ids.push_back(std::make_pair(endpoint_id,tmp));
+                   ^~~~~~~~~~~~~~~~~~~~~~~~                ~
+                   emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1010:20: warning: use emplace_back instead of push_back [modernize-use-emplace]
+            ep_ids.push_back(std::make_pair(endpoint_id,tmp));
+                   ^~~~~~~~~~~~~~~~~~~~~~~~                ~
+                   emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1017:24: warning: use emplace_back instead of push_back [modernize-use-emplace]
+                ep_ids.push_back(std::make_pair(endpoint_id,local_port_start + i));
+                       ^~~~~~~~~~~~~~~~~~~~~~~~                                 ~
+                       emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1059:30: warning: use nullptr [modernize-use-nullptr]
+            if ( ports[i] != NULL ) {
+                             ^~~~
+                             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1060:17: warning: use auto when initializing with new to avoid duplicating the type name [modernize-use-auto]
+                credit_event* cr_ev = new credit_event(0,input_buf_size/flit_size);
+                ^~~~~~~~~~~~
+                auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1072:30: warning: use nullptr [modernize-use-nullptr]
+            if ( ports[i] != NULL ) {
+                             ^~~~
+                             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1073:17: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+                credit_event* cr_ev = static_cast<credit_event*>(ports[i]->recvInitData());
+                ^~~~~~~~~~~~
+                auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1083:30: warning: use nullptr [modernize-use-nullptr]
+            if ( ports[i] != NULL ) {
+                             ^~~~
+                             nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1087:26: warning: use nullptr [modernize-use-nullptr]
+                    if ( NULL == ev ) break;
+                         ^~~~
+                         nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1091:25: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+                        NocPacket* packet = static_cast<NocPacket*>(ev);
+                        ^~~~~~~~~
+                        auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1147:33: warning: Called C++ object pointer is null [clang-analyzer-core.CallAndMessage]
+                                ports[north_port]->sendInitData(nme->clone());
+                                ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:559:5: note: Control jumps to the 'default' case at line 1080
+    switch ( init_state ) {
+    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1082:26: note: Assuming the condition is true
+        for ( int i = 0; i < local_port_start + local_ports; ++i ) {
+                         ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1082:9: note: Loop condition is true.  Entering loop body
+        for ( int i = 0; i < local_port_start + local_ports; ++i ) {
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1083:18: note: Assuming pointer value is null
+            if ( ports[i] != NULL ) {
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1083:13: note: Taking false branch
+            if ( ports[i] != NULL ) {
+            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1082:26: note: Assuming the condition is true
+        for ( int i = 0; i < local_port_start + local_ports; ++i ) {
+                         ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1082:9: note: Loop condition is true.  Entering loop body
+        for ( int i = 0; i < local_port_start + local_ports; ++i ) {
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1083:18: note: Assuming the condition is true
+            if ( ports[i] != NULL ) {
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1083:13: note: Taking true branch
+            if ( ports[i] != NULL ) {
+            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1085:17: note: Loop condition is true.  Entering loop body
+                while ( true ) { // Go until there are no more events
+                ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1087:26: note: Assuming 'ev' is not equal to NULL
+                    if ( NULL == ev ) break;
+                         ^
+/usr/local/lib/clang/10.0.0/include/stddef.h:84:18: note: expanded from macro 'NULL'
+#    define NULL __null
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1087:21: note: Taking false branch
+                    if ( NULL == ev ) break;
+                    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1090:26: note: Assuming 'endpoint' is false
+                    if ( endpoint ) {
+                         ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1090:21: note: Taking false branch
+                    if ( endpoint ) {
+                    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1100:26: note: Assuming the condition is true
+                    if ( nme->egress_port == -1 ) {
+                         ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1100:21: note: Taking true branch
+                    if ( nme->egress_port == -1 ) {
+                    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1121:30: note: 'endpoint' is false
+                        if ( endpoint || ( (1 << i ) & west_mask ) ) {
+                             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1121:30: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1121:25: note: Taking false branch
+                        if ( endpoint || ( (1 << i ) & west_mask ) ) {
+                        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1131:30: note: 'endpoint' is false
+                        if ( endpoint || ( (1 << i ) & east_mask ) ) {
+                             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1131:30: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1131:25: note: Taking false branch
+                        if ( endpoint || ( (1 << i ) & east_mask ) ) {
+                        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1142:30: note: 'endpoint' is false
+                        if ( endpoint || ( (1 << i ) & west_mask ) ||
+                             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1142:30: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1142:30: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1142:30: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1142:25: note: Taking true branch
+                        if ( endpoint || ( (1 << i ) & west_mask ) ||
+                        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1146:34: note: Assuming the condition is true
+                            if ( !(edge_status & north_mask) ) {
+                                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1146:29: note: Taking true branch
+                            if ( !(edge_status & north_mask) ) {
+                            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1147:33: note: Called C++ object pointer is null
+                                ports[north_port]->sendInitData(nme->clone());
+                                ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1166:41: warning: use nullptr [modernize-use-nullptr]
+                        nme->encap_ev = NULL;
+                                        ^~~~
+                                        nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1187:45: warning: use nullptr [modernize-use-nullptr]
+                            nme->encap_ev = NULL;
+                                            ^~~~
+                                            nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1207:33: warning: parameter 'phase' is unused [misc-unused-parameters]
+noc_mesh::complete(unsigned int phase)
+                                ^~~~~
+                                 /*phase*/
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1211:26: warning: use nullptr [modernize-use-nullptr]
+        if ( ports[i] != NULL ) {
+                         ^~~~
+                         nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1215:22: warning: use nullptr [modernize-use-nullptr]
+                if ( NULL == ev ) break;
+                     ^~~~
+                     nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1219:21: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+                    NocPacket* packet = static_cast<NocPacket*>(ev);
+                    ^~~~~~~~~
+                    auto
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1275:29: warning: Called C++ object pointer is null [clang-analyzer-core.CallAndMessage]
+                            ports[north_port]->sendInitData(nme->clone());
+                            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1210:22: note: Assuming the condition is true
+    for ( int i = 0; i < local_port_start + local_ports; ++i ) {
+                     ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1210:5: note: Loop condition is true.  Entering loop body
+    for ( int i = 0; i < local_port_start + local_ports; ++i ) {
+    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1211:14: note: Assuming pointer value is null
+        if ( ports[i] != NULL ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1211:9: note: Taking false branch
+        if ( ports[i] != NULL ) {
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1210:22: note: Assuming the condition is true
+    for ( int i = 0; i < local_port_start + local_ports; ++i ) {
+                     ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1210:5: note: Loop condition is true.  Entering loop body
+    for ( int i = 0; i < local_port_start + local_ports; ++i ) {
+    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1211:14: note: Assuming the condition is true
+        if ( ports[i] != NULL ) {
+             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1211:9: note: Taking true branch
+        if ( ports[i] != NULL ) {
+        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1213:13: note: Loop condition is true.  Entering loop body
+            while ( true ) { // Go until there are no more events
+            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1215:22: note: Assuming 'ev' is not equal to NULL
+                if ( NULL == ev ) break;
+                     ^
+/usr/local/lib/clang/10.0.0/include/stddef.h:84:18: note: expanded from macro 'NULL'
+#    define NULL __null
+                 ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1215:17: note: Taking false branch
+                if ( NULL == ev ) break;
+                ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1218:22: note: Assuming 'endpoint' is false
+                if ( endpoint ) {
+                     ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1218:17: note: Taking false branch
+                if ( endpoint ) {
+                ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1228:22: note: Assuming the condition is true
+                if ( nme->egress_port == -1 ) {
+                     ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1228:17: note: Taking true branch
+                if ( nme->egress_port == -1 ) {
+                ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1249:26: note: 'endpoint' is false
+                    if ( endpoint || ( (1 << i ) & west_mask ) ) {
+                         ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1249:26: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1249:21: note: Taking false branch
+                    if ( endpoint || ( (1 << i ) & west_mask ) ) {
+                    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1259:26: note: 'endpoint' is false
+                    if ( endpoint || ( (1 << i ) & east_mask ) ) {
+                         ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1259:26: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1259:21: note: Taking false branch
+                    if ( endpoint || ( (1 << i ) & east_mask ) ) {
+                    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1270:26: note: 'endpoint' is false
+                    if ( endpoint || ( (1 << i ) & west_mask ) ||
+                         ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1270:26: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1270:26: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1270:26: note: Left side of '||' is false
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1270:21: note: Taking true branch
+                    if ( endpoint || ( (1 << i ) & west_mask ) ||
+                    ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1274:30: note: Assuming the condition is true
+                        if ( !(edge_status & north_mask) ) {
+                             ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1274:25: note: Taking true branch
+                        if ( !(edge_status & north_mask) ) {
+                        ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1275:29: note: Called C++ object pointer is null
+                            ports[north_port]->sendInitData(nme->clone());
+                            ^
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1294:37: warning: use nullptr [modernize-use-nullptr]
+                    nme->encap_ev = NULL;
+                                    ^~~~
+                                    nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1315:41: warning: use nullptr [modernize-use-nullptr]
+                        nme->encap_ev = NULL;
+                                        ^~~~
+                                        nullptr
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1338:9: warning: use emplace_back instead of push_back [modernize-use-emplace]
+    vec.push_back(std::make_pair("North", port));
+        ^~~~~~~~~~~~~~~~~~~~~~~~              ~
+        emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1340:9: warning: use emplace_back instead of push_back [modernize-use-emplace]
+    vec.push_back(std::make_pair("South", port));
+        ^~~~~~~~~~~~~~~~~~~~~~~~              ~
+        emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1342:9: warning: use emplace_back instead of push_back [modernize-use-emplace]
+    vec.push_back(std::make_pair("East", port));
+        ^~~~~~~~~~~~~~~~~~~~~~~~             ~
+        emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1344:9: warning: use emplace_back instead of push_back [modernize-use-emplace]
+    vec.push_back(std::make_pair("West", port));
+        ^~~~~~~~~~~~~~~~~~~~~~~~             ~
+        emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1348:13: warning: use emplace_back instead of push_back [modernize-use-emplace]
+        vec.push_back(std::make_pair(str,i+local_port_start));
+            ^~~~~~~~~~~~~~~~~~~~~~~~                       ~
+            emplace_back
+/home/sabbir/sst-elements-org/kingsley/noc_mesh.cc:1355:37: warning: use nullptr [modernize-use-nullptr]
+        if ( ports[pinfo.second] != NULL ) {
+                                    ^~~~
+                                    nullptr
+Applying fixes ...
+Enabled checks:
+    modernize-use-override
+
+clang-apply-replacements version 10.0.0
+clang-tidy -checks=-*,modernize-use-override -export-fixes /tmp/tmph88_mgwz/tmpeull4401.yaml -p=kingsley/build /home/sabbir/sst-elements-org/kingsley/linkControl.cc
+clang-tidy -checks=-*,modernize-use-override -export-fixes /tmp/tmph88_mgwz/tmp_c3p9xba.yaml -p=kingsley/build /home/sabbir/sst-elements-org/kingsley/noc_mesh.cc
+Applying fixes ...

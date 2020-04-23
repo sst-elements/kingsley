@@ -47,7 +47,7 @@ class BaseNocEvent : public Event {
     BaseNocEvent(NocEventType type) : Event(), type(type) {}
 
   private:
-    BaseNocEvent() = default; // For Serialization only
+    BaseNocEvent() {} // For Serialization only
     NocEventType type;
 
     ImplementSerializable(SST::Kingsley::BaseNocEvent);
@@ -59,10 +59,7 @@ class NocPacket : public BaseNocEvent {
     SST::Interfaces::SimpleNetwork::Request *request;
     int vn;
 
-    NocPacket()
-        : BaseNocEvent(BaseNocEvent::PACKET)
-
-    {}
+    NocPacket() : BaseNocEvent(BaseNocEvent::PACKET), injectionTime(0) {}
 
     NocPacket(SST::Interfaces::SimpleNetwork::Request *req)
         : BaseNocEvent(BaseNocEvent::PACKET), request(req), injectionTime(0) {}
@@ -71,13 +68,13 @@ class NocPacket : public BaseNocEvent {
 
     inline void setInjectionTime(SimTime_t time) { injectionTime = time; }
 
-    virtual NocPacket *clone() override {
-        auto *ret = new NocPacket(*this);
+    virtual NocPacket *clone(void) override {
+        NocPacket *ret = new NocPacket(*this);
         ret->request = this->request->clone();
         return ret;
     }
 
-    inline SimTime_t getInjectionTime() const { return injectionTime; }
+    inline SimTime_t getInjectionTime(void) const { return injectionTime; }
     inline SST::Interfaces::SimpleNetwork::Request::TraceType getTraceType() const { return request->getTraceType(); }
     inline int getTraceID() const { return request->getTraceID(); }
 
@@ -85,9 +82,9 @@ class NocPacket : public BaseNocEvent {
     inline int getSizeInFlits() { return size_in_flits; }
 
     virtual void print(const std::string &header, Output &out) const override {
-        out.output("%s RtrEvent to be delivered at %" PRIu64 " with priority %d. src = %ld, dest = %ld\n",
+        out.output("%s RtrEvent to be delivered at %" PRIu64 " with priority %d. src = %lld, dest = %lld\n",
                    header.c_str(), getDeliveryTime(), getPriority(), request->src, request->dest);
-        if (request->inspectPayload() != nullptr)
+        if (request->inspectPayload() != NULL)
             request->inspectPayload()->print("  -> ", out);
     }
 
@@ -100,7 +97,7 @@ class NocPacket : public BaseNocEvent {
     }
 
   private:
-    SimTime_t injectionTime{0};
+    SimTime_t injectionTime;
     int size_in_flits;
 
     ImplementSerializable(SST::Kingsley::NocPacket)
@@ -154,8 +151,8 @@ class NocInitEvent : public BaseNocEvent {
 
     NocInitEvent() : BaseNocEvent(BaseNocEvent::INITIALIZATION) {}
 
-    virtual NocInitEvent *clone() override {
-        auto *ret = new NocInitEvent(*this);
+    virtual NocInitEvent *clone(void) override {
+        NocInitEvent *ret = new NocInitEvent(*this);
         return ret;
     }
 

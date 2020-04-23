@@ -162,17 +162,17 @@ class noc_mesh_event : public BaseNocEvent {
     int next_port;
     NocPacket *encap_ev;
 
-    noc_mesh_event() : BaseNocEvent(BaseNocEvent::INTERNAL) { encap_ev = nullptr; }
+    noc_mesh_event() : BaseNocEvent(BaseNocEvent::INTERNAL) { encap_ev = NULL; }
 
     noc_mesh_event(NocPacket *ev) : BaseNocEvent(BaseNocEvent::INTERNAL) { encap_ev = ev; }
 
     virtual ~noc_mesh_event() {
-        if (encap_ev != nullptr)
+        if (encap_ev != NULL)
             delete encap_ev;
     }
 
-    virtual noc_mesh_event *clone() override {
-        auto *ret = new noc_mesh_event(*this);
+    virtual noc_mesh_event *clone(void) override {
+        noc_mesh_event *ret = new noc_mesh_event(*this);
         ret->dest_mesh_loc = dest_mesh_loc;
         ret->egress_port = egress_port;
         ret->next_port = next_port;
