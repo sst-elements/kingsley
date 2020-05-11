@@ -20,11 +20,11 @@
 
 #include <sst/core/component.h>
 #include <sst/core/event.h>
-#include <sst/core/interfaces/simpleNetwork.h>
 #include <sst/core/link.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/timeConverter.h>
 #include <sst/core/unitAlgebra.h>
+#include <sst/core/interfaces/simpleNetwork.h>
 
 using namespace SST;
 
@@ -47,7 +47,7 @@ class BaseNocEvent : public Event {
     BaseNocEvent(NocEventType type) : Event(), type(type) {}
 
   private:
-    BaseNocEvent() {} // For Serialization only
+    BaseNocEvent() = default; // For Serialization only
     NocEventType type;
 
     ImplementSerializable(SST::Kingsley::BaseNocEvent);
@@ -59,32 +59,35 @@ class NocPacket : public BaseNocEvent {
     SST::Interfaces::SimpleNetwork::Request *request;
     int vn;
 
-    NocPacket() : BaseNocEvent(BaseNocEvent::PACKET), injectionTime(0) {}
+    NocPacket()
+        : BaseNocEvent(BaseNocEvent::PACKET)
+
+    {}
 
     NocPacket(SST::Interfaces::SimpleNetwork::Request *req)
         : BaseNocEvent(BaseNocEvent::PACKET), request(req), injectionTime(0) {}
 
-    ~NocPacket() { delete request; }
+    ~NocPacket() override { delete request; }
 
     inline void setInjectionTime(SimTime_t time) { injectionTime = time; }
 
-    virtual NocPacket *clone(void) override {
-        NocPacket *ret = new NocPacket(*this);
+    NocPacket *clone() override {
+        auto *ret = new NocPacket(*this);
         ret->request = this->request->clone();
         return ret;
     }
 
-    inline SimTime_t getInjectionTime(void) const { return injectionTime; }
+    inline SimTime_t getInjectionTime() const { return injectionTime; }
     inline SST::Interfaces::SimpleNetwork::Request::TraceType getTraceType() const { return request->getTraceType(); }
     inline int getTraceID() const { return request->getTraceID(); }
 
     inline void setSizeInFlits(int size) { size_in_flits = size; }
     inline int getSizeInFlits() { return size_in_flits; }
 
-    virtual void print(const std::string &header, Output &out) const override {
+    void print(const std::string &header, Output &out) const override {
         out.output("%s RtrEvent to be delivered at %" PRIu64 " with priority %d. src = %lld, dest = %lld\n",
                    header.c_str(), getDeliveryTime(), getPriority(), request->src, request->dest);
-        if (request->inspectPayload() != NULL)
+        if (request->inspectPayload() != nullptr)
             request->inspectPayload()->print("  -> ", out);
     }
 
@@ -97,7 +100,7 @@ class NocPacket : public BaseNocEvent {
     }
 
   private:
-    SimTime_t injectionTime;
+    SimTime_t injectionTime{0};
     int size_in_flits;
 
     ImplementSerializable(SST::Kingsley::NocPacket)
@@ -112,7 +115,7 @@ class credit_event : public BaseNocEvent {
 
     credit_event(int vn, int credits) : BaseNocEvent(BaseNocEvent::CREDIT), vn(vn), credits(credits) {}
 
-    virtual void print(const std::string &header, Output &out) const override {
+    void print(const std::string &header, Output &out) const override {
         out.output("%s credit_event to be delivered at %" PRIu64 " with priority %d\n", header.c_str(),
                    getDeliveryTime(), getPriority());
     }
@@ -151,12 +154,12 @@ class NocInitEvent : public BaseNocEvent {
 
     NocInitEvent() : BaseNocEvent(BaseNocEvent::INITIALIZATION) {}
 
-    virtual NocInitEvent *clone(void) override {
-        NocInitEvent *ret = new NocInitEvent(*this);
+    NocInitEvent *clone() override {
+        auto *ret = new NocInitEvent(*this);
         return ret;
     }
 
-    virtual void print(const std::string &header, Output &out) const override {
+    void print(const std::string &header, Output &out) const override {
         out.output("%s NocInitEvent to be delivered at %" PRIu64 " with priority %d\n", header.c_str(),
                    getDeliveryTime(), getPriority());
         out.output("%s     command: %d, int_value = %d, ua_value = %s\n", header.c_str(), command, int_value,

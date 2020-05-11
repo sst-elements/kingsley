@@ -12,8 +12,8 @@
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
-#include "noc_mesh.h"
 #include <sst/core/sst_config.h>
+#include "noc_mesh.h"
 
 #include <sst/core/params.h>
 #include <sst/core/sharedRegion.h>

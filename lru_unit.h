@@ -29,8 +29,8 @@ template <typename T> class lru_unit {
     T *current_list;
     T *sat_list;
     T *unsat_list;
-    bool finalized;
-    int current;
+    bool finalized{false};
+    int current{0};
 
     void init_lists() {
         int next = (current + 1) & 0x1;
@@ -42,7 +42,7 @@ template <typename T> class lru_unit {
     }
 
   public:
-    lru_unit() : finalized(false), current(0) {}
+    lru_unit() {}
 
     // Called once all the entries have been initialized
     void finalize() {
